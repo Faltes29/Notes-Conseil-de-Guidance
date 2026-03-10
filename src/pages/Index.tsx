@@ -4,6 +4,7 @@ import React from 'react';
 import StudentHeader from "@/components/StudentHeader";
 import CourseSelector from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
+import AutonomousWork from "@/components/AutonomousWork";
 import ObservationFields from "@/components/ObservationFields";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Save, Trash2 } from "lucide-react";
@@ -37,7 +38,10 @@ const Index = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CourseSelector />
-            <SkillsSelector />
+            <div className="space-y-8">
+              <SkillsSelector />
+              <AutonomousWork />
+            </div>
           </div>
 
           <ObservationFields />
