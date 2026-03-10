@@ -6,6 +6,7 @@ import CourseSelector from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
 import AutonomousWork from "@/components/AutonomousWork";
 import ObservationFields from "@/components/ObservationFields";
+import RemediationSection from "@/components/RemediationSection";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Save, Trash2 } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
@@ -45,6 +46,8 @@ const Index = () => {
           </div>
 
           <ObservationFields />
+          
+          <RemediationSection />
           
           {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
