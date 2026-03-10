@@ -9,23 +9,56 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Save, Trash2, Users, Database, ChevronRight } from "lucide-react";
-import { showSuccess } from "@/utils/toast";
+import { GraduationCap, Save, Trash2, Users, Database, ChevronRight, Loader2 } from "lucide-react";
+import { showSuccess, showError } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { studentsDatabase } from "@/data/students";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(studentsDatabase[0].id);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
 
-  const handleSave = () => {
-    showSuccess(`Le bilan de ${currentStudent?.firstName} ${currentStudent?.lastName} a été enregistré avec succès !`);
+  const handleSave = async () => {
+    if (!currentStudent) return;
+    
+    setIsSaving(true);
+    try {
+      // Note: Dans une application réelle, nous récupérerions les états de chaque composant enfant
+      // Pour cet exemple, nous simulons l'envoi des données structurées
+      const { error } = await supabase
+        .from('reports')
+        .insert([
+          {
+            student_id: currentStudent.id,
+            student_name: `${currentStudent.firstName} ${currentStudent.lastName}`,
+            period: "Période 1", // À dynamiser avec l'état du header
+            class_name: currentStudent.className,
+            // Les données ci-dessous seraient normalement extraites des états des composants
+            course_results: {}, 
+            transversal_skills: [],
+            autonomous_work: {},
+            observations: {},
+            remediation: [],
+            sensitive_info: {}
+          }
+        ]);
+
+      if (error) throw error;
+
+      showSuccess(`Le bilan de ${currentStudent.firstName} ${currentStudent.lastName} a été enregistré dans la base de données !`);
+    } catch (error: any) {
+      showError("Erreur lors de l'enregistrement : " + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleNextStudent = () => {
-    handleSave();
+  const handleNextStudent = async () => {
+    await handleSave();
 
     const currentIndex = studentsDatabase.findIndex(s => s.id === selectedStudentId);
     
@@ -34,7 +67,7 @@ const Index = () => {
       setSelectedStudentId(nextStudent.id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      showSuccess("Vous avez terminé la saisie pour tous les élèves de la base de données !");
+      showSuccess("Vous avez terminé la saisie pour tous les élèves !");
     }
   };
 
@@ -94,15 +127,16 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
             <Button 
               onClick={handleSave}
+              disabled={isSaving}
               className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-indigo-100 transition-all hover:scale-105"
             >
-              <Save className="w-5 h-5 mr-2" />
+              {isSaving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
               Enregistrer
             </Button>
 
             <Button 
               onClick={handleNextStudent}
-              disabled={studentsDatabase.findIndex(s => s.id === selectedStudentId) === studentsDatabase.length - 1}
+              disabled={isSaving || studentsDatabase.findIndex(s => s.id === selectedStudentId) === studentsDatabase.length - 1}
               className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-emerald-100 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
             >
               Élève suivant
@@ -111,6 +145,7 @@ const Index = () => {
 
             <Button 
               variant="outline"
+              disabled={isSaving}
               className="w-full sm:w-auto border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 px-8 py-6 rounded-2xl text-lg font-semibold transition-all"
             >
               <Trash2 className="w-5 h-5 mr-2" />
