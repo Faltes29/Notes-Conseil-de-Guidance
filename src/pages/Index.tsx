@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import StudentHeader from "@/components/StudentHeader";
 import CourseSelector from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
 import { Button } from "@/components/ui/button";
@@ -10,27 +11,28 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const Index = () => {
   const handleSave = () => {
-    showSuccess("Les résultats ont été enregistrés avec succès !");
+    showSuccess("Le bilan de l'élève a été enregistré avec succès !");
   };
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <header className="text-center space-y-4 mb-12">
-          <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl shadow-indigo-200 shadow-xl mb-4">
+        <header className="text-center space-y-4 mb-8">
+          <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl shadow-indigo-200 shadow-xl mb-2">
             <GraduationCap className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-            Suivi des Résultats Scolaires
+            Bilan Scolaire Personnalisé
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Saisissez les évaluations et les compétences pour un suivi personnalisé de la progression de l'élève.
+            Complétez les informations ci-dessous pour générer le suivi de l'élève.
           </p>
         </header>
 
         {/* Main Content */}
         <main className="space-y-8">
+          <StudentHeader />
           <CourseSelector />
           <SkillsSelector />
           
