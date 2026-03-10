@@ -9,9 +9,10 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Save, Trash2 } from "lucide-react";
+import { GraduationCap, Save, Trash2, Users } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const handleSave = () => {
@@ -22,7 +23,16 @@ const Index = () => {
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
-        <header className="text-center space-y-4 mb-8">
+        <header className="text-center space-y-4 mb-8 relative">
+          <div className="absolute right-0 top-0">
+            <Link to="/students">
+              <Button variant="outline" className="rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+                <Users className="w-4 h-4 mr-2" />
+                Liste des élèves
+              </Button>
+            </Link>
+          </div>
+          
           <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl shadow-indigo-200 shadow-xl mb-2">
             <GraduationCap className="w-8 h-8 text-white" />
           </div>
