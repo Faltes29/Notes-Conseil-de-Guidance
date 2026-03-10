@@ -4,6 +4,7 @@ import React from 'react';
 import StudentHeader from "@/components/StudentHeader";
 import CourseSelector from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
+import ObservationFields from "@/components/ObservationFields";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Save, Trash2 } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
@@ -16,7 +17,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <header className="text-center space-y-4 mb-8">
           <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl shadow-indigo-200 shadow-xl mb-2">
@@ -33,8 +34,13 @@ const Index = () => {
         {/* Main Content */}
         <main className="space-y-8">
           <StudentHeader />
-          <CourseSelector />
-          <SkillsSelector />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <CourseSelector />
+            <SkillsSelector />
+          </div>
+
+          <ObservationFields />
           
           {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
