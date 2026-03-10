@@ -7,11 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User, School, Users, CalendarDays } from "lucide-react";
 
+export const studentsList = ["Alice Martin", "Lucas Bernard", "Emma Petit", "Thomas Richard", "Chloé Durand"];
 const periods = ["Période 1", "Période 2", "Période 3"];
 const classes = ["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème"];
-const students = ["Alice Martin", "Lucas Bernard", "Emma Petit", "Thomas Richard", "Chloé Durand"];
 
-const StudentHeader = () => {
+interface StudentHeaderProps {
+  selectedStudent: string;
+  onStudentChange: (value: string) => void;
+}
+
+const StudentHeader = ({ selectedStudent, onStudentChange }: StudentHeaderProps) => {
   return (
     <Card className="border-none shadow-lg bg-white/80 backdrop-blur-md overflow-hidden">
       <div className="h-2 bg-indigo-500 w-full" />
@@ -40,7 +45,7 @@ const StudentHeader = () => {
             <School className="w-4 h-4" />
             <Label htmlFor="class-select" className="font-semibold">Classe</Label>
           </div>
-          <Select>
+          <Select defaultValue="cm1">
             <SelectTrigger id="class-select" className="rounded-xl border-slate-200 bg-white focus:ring-indigo-500">
               <SelectValue placeholder="Choisir une classe" />
             </SelectTrigger>
@@ -58,13 +63,13 @@ const StudentHeader = () => {
             <Users className="w-4 h-4" />
             <Label htmlFor="student-select" className="font-semibold">Élève</Label>
           </div>
-          <Select>
+          <Select value={selectedStudent} onValueChange={onStudentChange}>
             <SelectTrigger id="student-select" className="rounded-xl border-slate-200 bg-white focus:ring-indigo-500">
               <SelectValue placeholder="Sélectionner l'élève" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-200">
-              {students.map((s) => (
-                <SelectItem key={s} value={s.toLowerCase().replace(' ', '-')}>{s}</SelectItem>
+              {studentsList.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
           </Select>

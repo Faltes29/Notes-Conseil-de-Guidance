@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import StudentHeader from "@/components/StudentHeader";
+import StudentHeader, { studentsList } from "@/components/StudentHeader";
 import CourseSelector from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
 import AutonomousWork from "@/components/AutonomousWork";
@@ -9,14 +9,33 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Save, Trash2, Users, Database } from "lucide-react";
-import { showSuccess } from "@/utils/toast";
+import { GraduationCap, Save, Trash2, Users, Database, ChevronRight } from "lucide-react";
+import { showSuccess, showError } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 
 const Index = () => {
+  const [selectedStudent, setSelectedStudent] = React.useState<string>(studentsList[0]);
+
   const handleSave = () => {
-    showSuccess("Le bilan de l'élève a été enregistré avec succès !");
+    showSuccess(`Le bilan de ${selectedStudent} a été enregistré avec succès !`);
+  };
+
+  const handleNextStudent = () => {
+    // 1. Enregistrer le bilan actuel
+    handleSave();
+
+    // 2. Trouver l'index de l'élève actuel
+    const currentIndex = studentsList.indexOf(selectedStudent);
+    
+    // 3. Sélectionner l'élève suivant s'il existe
+    if (currentIndex < studentsList.length - 1) {
+      const nextStudent = studentsList[currentIndex + 1];
+      setSelectedStudent(nextStudent);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      showSuccess("Vous avez terminé la saisie pour tous les élèves de cette liste !");
+    }
   };
 
   return (
@@ -52,7 +71,10 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="space-y-8">
-          <StudentHeader />
+          <StudentHeader 
+            selectedStudent={selectedStudent} 
+            onStudentChange={setSelectedStudent} 
+          />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CourseSelector />
@@ -75,8 +97,18 @@ const Index = () => {
               className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-indigo-100 transition-all hover:scale-105"
             >
               <Save className="w-5 h-5 mr-2" />
-              Enregistrer le bilan
+              Enregistrer
             </Button>
+
+            <Button 
+              onClick={handleNextStudent}
+              disabled={studentsList.indexOf(selectedStudent) === studentsList.length - 1}
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-emerald-100 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+            >
+              Élève suivant
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+
             <Button 
               variant="outline"
               className="w-full sm:w-auto border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 px-8 py-6 rounded-2xl text-lg font-semibold transition-all"
