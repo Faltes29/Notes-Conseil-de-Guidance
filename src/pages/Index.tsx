@@ -10,11 +10,10 @@ import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Save, Trash2, Users, Database, ChevronRight, Loader2 } from "lucide-react";
-import { showSuccess, showError } from "@/utils/toast";
+import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { studentsDatabase } from "@/data/students";
-import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(studentsDatabase[0].id);
@@ -26,35 +25,11 @@ const Index = () => {
     if (!currentStudent) return;
     
     setIsSaving(true);
-    try {
-      // Note: Dans une application réelle, nous récupérerions les états de chaque composant enfant
-      // Pour cet exemple, nous simulons l'envoi des données structurées
-      const { error } = await supabase
-        .from('reports')
-        .insert([
-          {
-            student_id: currentStudent.id,
-            student_name: `${currentStudent.firstName} ${currentStudent.lastName}`,
-            period: "Période 1", // À dynamiser avec l'état du header
-            class_name: currentStudent.className,
-            // Les données ci-dessous seraient normalement extraites des états des composants
-            course_results: {}, 
-            transversal_skills: [],
-            autonomous_work: {},
-            observations: {},
-            remediation: [],
-            sensitive_info: {}
-          }
-        ]);
-
-      if (error) throw error;
-
-      showSuccess(`Le bilan de ${currentStudent.firstName} ${currentStudent.lastName} a été enregistré dans la base de données !`);
-    } catch (error: any) {
-      showError("Erreur lors de l'enregistrement : " + error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    // Simulation d'une sauvegarde locale
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    showSuccess(`Le bilan de ${currentStudent.firstName} ${currentStudent.lastName} a été enregistré localement !`);
+    setIsSaving(false);
   };
 
   const handleNextStudent = async () => {
@@ -78,7 +53,7 @@ const Index = () => {
         <header className="text-center space-y-4 mb-8 relative">
           <div className="absolute right-0 top-0 flex flex-col sm:flex-row gap-2">
             <Link to="/students">
-              <Button variant="outline" className="w-full sm:w-auto rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+              <Button variant="outline" className="w-full sm:w-auto rounded-xl border-violet-100 text-violet-600 hover:bg-violet-50">
                 <Users className="w-4 h-4 mr-2" />
                 Liste
               </Button>
@@ -91,7 +66,7 @@ const Index = () => {
             </Link>
           </div>
           
-          <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl shadow-indigo-200 shadow-xl mb-2">
+          <div className="inline-flex items-center justify-center p-3 bg-violet-600 rounded-2xl shadow-violet-200 shadow-xl mb-2">
             <GraduationCap className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
@@ -128,7 +103,7 @@ const Index = () => {
             <Button 
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-indigo-100 transition-all hover:scale-105"
+              className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-violet-100 transition-all hover:scale-105"
             >
               {isSaving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
               Enregistrer
