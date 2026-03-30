@@ -9,7 +9,15 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { Save as SaveIcon, Trash2 as TrashIcon, Users as UsersIcon, Database as DbIcon, ChevronRight as NextIcon, Loader2 as LoaderIcon, GraduationCap as GradIcon } from "lucide-react";
+import { 
+  Save as SaveIcon, 
+  Users as UsersIcon, 
+  Database as DbIcon, 
+  ChevronRight as NextIcon, 
+  ChevronLeft as PrevIcon,
+  Loader2 as LoaderIcon, 
+  GraduationCap as GradIcon 
+} from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
@@ -29,43 +37,59 @@ const Index = () => {
   }, [selectedClass]);
 
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
+  const currentIndex = studentsDatabase.findIndex(s => s.id === selectedStudentId);
 
   const handleClassChange = (className: string) => {
     setSelectedClass(className);
-    // Sélectionner le premier élève de la nouvelle classe
     const firstInClass = studentsDatabase.find(s => s.className === className);
     if (firstInClass) {
       setSelectedStudentId(firstInClass.id);
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (silent = false) => {
     if (!currentStudent) return;
     
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Simulation d'un délai réseau
+    await new Promise(resolve => setTimeout(resolve, 600));
     
-    showSuccess(`Le bilan de ${currentStudent.firstName} ${currentStudent.lastName} a été enregistré localement !`);
+    if (!silent) {
+      showSuccess(`Le bilan de ${currentStudent.firstName} ${currentStudent.lastName} a été enregistré !`);
+    }
     setIsSaving(false);
   };
 
   const handleNextStudent = async () => {
-    await handleSave();
+    await handleSave(true); // Sauvegarde silencieuse avant de changer
 
-    const currentIndex = studentsDatabase.findIndex(s => s.id === selectedStudentId);
-    
     if (currentIndex < studentsDatabase.length - 1) {
       const nextStudent = studentsDatabase[currentIndex + 1];
       setSelectedClass(nextStudent.className);
       setSelectedStudentId(nextStudent.id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      showSuccess(`Passage à l'élève suivant : ${nextStudent.firstName}`);
     } else {
-      showSuccess("Vous avez terminé la saisie pour tous les élèves !");
+      showSuccess("Vous avez atteint le dernier élève !");
+    }
+  };
+
+  const handlePreviousStudent = async () => {
+    await handleSave(true); // Sauvegarde silencieuse avant de changer
+
+    if (currentIndex > 0) {
+      const prevStudent = studentsDatabase[currentIndex - 1];
+      setSelectedClass(prevStudent.className);
+      setSelectedStudentId(prevStudent.id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showSuccess(`Retour à l'élève précédent : ${prevStudent.firstName}`);
+    } else {
+      showSuccess("Vous êtes déjà sur le premier élève !");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-32">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <header className="text-center space-y-4 mb-8 relative">
@@ -118,37 +142,44 @@ const Index = () => {
           <RemediationSection degree={selectedDegree} />
 
           <SensitiveInfo />
-          
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+        </main>
+
+        {/* Floating Action Bar */}
+        <div className="fixed bottom-8 left-0 right-0 flex justify-center px-4 z-50 pointer-events-none">
+          <div className="bg-white/90 backdrop-blur-xl border border-slate-200 p-2 rounded-3xl shadow-2xl flex items-center gap-2 pointer-events-auto max-w-full overflow-x-auto">
             <Button 
-              onClick={handleSave}
+              variant="ghost"
+              onClick={handlePreviousStudent}
+              disabled={isSaving || currentIndex === 0}
+              className="rounded-2xl h-14 px-4 text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+            >
+              <PrevIcon className="w-5 h-5 mr-2" />
+              <span className="hidden sm:inline">Précédent</span>
+            </Button>
+
+            <div className="w-px h-8 bg-slate-200 mx-1 hidden sm:block" />
+
+            <Button 
+              onClick={() => handleSave()}
               disabled={isSaving}
-              className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-violet-100 transition-all hover:scale-105"
+              className="bg-violet-600 hover:bg-violet-700 text-white h-14 px-8 rounded-2xl font-bold shadow-lg shadow-violet-100 transition-all hover:scale-105 min-w-[140px]"
             >
               {isSaving ? <LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> : <SaveIcon className="w-5 h-5 mr-2" />}
               Enregistrer
             </Button>
 
-            <Button 
-              onClick={handleNextStudent}
-              disabled={isSaving || studentsDatabase.findIndex(s => s.id === selectedStudentId) === studentsDatabase.length - 1}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 rounded-2xl text-lg font-semibold shadow-lg shadow-emerald-100 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-            >
-              Élève suivant
-              <NextIcon className="w-5 h-5 ml-2" />
-            </Button>
+            <div className="w-px h-8 bg-slate-200 mx-1 hidden sm:block" />
 
             <Button 
-              variant="outline"
-              disabled={isSaving}
-              className="w-full sm:w-auto border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 px-8 py-6 rounded-2xl text-lg font-semibold transition-all"
+              onClick={handleNextStudent}
+              disabled={isSaving || currentIndex === studentsDatabase.length - 1}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white h-14 px-6 rounded-2xl font-bold shadow-lg shadow-emerald-100 transition-all hover:scale-105 disabled:opacity-30"
             >
-              <TrashIcon className="w-5 h-5 mr-2" />
-              Réinitialiser
+              <span className="hidden sm:inline">Suivant</span>
+              <NextIcon className="w-5 h-5 ml-2" />
             </Button>
           </div>
-        </main>
+        </div>
 
         <footer className="pt-12">
           <MadeWithDyad />
