@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, HelpCircle, XCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { degreeData } from "@/data/students";
 
 export type Status = 'none' | 'failure' | 'difficulty' | 'not-evaluable';
 
@@ -15,19 +14,15 @@ interface Course {
   status: Status;
 }
 
-interface CourseSelectorProps {
-  degree: string;
-}
+const coursesList = [
+  "Mathématiques", "Français", "Histoire-Géographie", "Sciences", 
+  "Anglais", "EPS", "Arts Plastiques", "Musique"
+];
 
-const CourseSelector = ({ degree }: CourseSelectorProps) => {
-  const subjects = degreeData[degree as keyof typeof degreeData]?.subjects || [];
-  
-  const [courses, setCourses] = React.useState<Course[]>([]);
-
-  // Réinitialiser les cours quand le degré change
-  React.useEffect(() => {
-    setCourses(subjects.map(name => ({ id: name, name, status: 'none' })));
-  }, [degree]);
+const CourseSelector = () => {
+  const [courses, setCourses] = React.useState<Course[]>(
+    coursesList.map(name => ({ id: name, name, status: 'none' }))
+  );
 
   const updateStatus = (id: string, status: Status) => {
     setCourses(prev => prev.map(c => 
@@ -35,6 +30,7 @@ const CourseSelector = ({ degree }: CourseSelectorProps) => {
     ));
   };
 
+  // Tri des matières : Échec > Difficulté > Non évalué > Aucun
   const sortedCourses = [...courses].sort((a, b) => {
     const priority: Record<Status, number> = { 
       'failure': 1, 
