@@ -8,6 +8,7 @@ import AutonomousWork from "@/components/AutonomousWork";
 import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
+import StudentSituation from "@/components/StudentSituation";
 import { Button } from "@/components/ui/button";
 import { 
   Save as SaveIcon, 
@@ -142,6 +143,8 @@ const Index = () => {
           <RemediationSection degree={selectedDegree} />
 
           <SensitiveInfo />
+
+          <StudentSituation />
         </main>
 
         {/* Floating Action Bar */}
