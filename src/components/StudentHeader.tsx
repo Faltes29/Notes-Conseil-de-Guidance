@@ -6,35 +6,61 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User, School, Users, CalendarDays, Layers } from "lucide-react";
-import { studentsDatabase, classes, periods, degrees } from "@/data/students";
+import { studentsDatabase, classes, periods, classesByDegree } from "@/data/students";
 
 interface StudentHeaderProps {
   selectedStudentId: string;
   onStudentChange: (id: string) => void;
+  selectedClass: string;
+  onClassChange: (className: string) => void;
   selectedDegree: string;
-  onDegreeChange: (degree: string) => void;
 }
 
-const StudentHeader = ({ selectedStudentId, onStudentChange, selectedDegree, onDegreeChange }: StudentHeaderProps) => {
+const StudentHeader = ({ 
+  selectedStudentId, 
+  onStudentChange, 
+  selectedClass, 
+  onClassChange,
+  selectedDegree 
+}: StudentHeaderProps) => {
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
+  const filteredStudents = studentsDatabase.filter(s => s.className === selectedClass);
 
   return (
     <Card className="border-none shadow-lg bg-white/80 backdrop-blur-md overflow-hidden">
       <div className="h-2 bg-violet-500 w-full" />
       <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        {/* Degré */}
+        {/* Classe */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <Layers className="w-4 h-4" />
-            <Label htmlFor="degree-select" className="font-semibold">Degré</Label>
+            <School className="w-4 h-4" />
+            <Label htmlFor="class-select" className="font-semibold">Classe</Label>
           </div>
-          <Select value={selectedDegree} onValueChange={onDegreeChange}>
-            <SelectTrigger id="degree-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
-              <SelectValue placeholder="Choisir le degré" />
+          <Select value={selectedClass} onValueChange={onClassChange}>
+            <SelectTrigger id="class-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
+              <SelectValue placeholder="Choisir la classe" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200">
-              {degrees.map((d) => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
+            <SelectContent className="rounded-xl border-slate-200 max-h-[300px]">
+              {classes.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Élève */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-slate-600 mb-1">
+            <Users className="w-4 h-4" />
+            <Label htmlFor="student-select" className="font-semibold">Élève</Label>
+          </div>
+          <Select value={selectedStudentId} onValueChange={onStudentChange} disabled={!selectedClass}>
+            <SelectTrigger id="student-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
+              <SelectValue placeholder={selectedClass ? "Sélectionner l'élève" : "Choisissez d'abord une classe"} />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-200 max-h-[300px]">
+              {filteredStudents.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.firstName} {s.lastName}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -58,40 +84,15 @@ const StudentHeader = ({ selectedStudentId, onStudentChange, selectedDegree, onD
           </Select>
         </div>
 
-        {/* Classe */}
+        {/* Degré (Affichage seul car automatique) */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <School className="w-4 h-4" />
-            <Label htmlFor="class-select" className="font-semibold">Classe</Label>
+            <Layers className="w-4 h-4" />
+            <Label className="font-semibold">Degré</Label>
           </div>
-          <Select value={currentStudent?.className}>
-            <SelectTrigger id="class-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
-              <SelectValue placeholder="Classe de l'élève" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200">
-              {classes.map((c) => (
-                <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Élève */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-slate-600 mb-1">
-            <Users className="w-4 h-4" />
-            <Label htmlFor="student-select" className="font-semibold">Élève</Label>
+          <div className="h-10 flex items-center px-3 rounded-xl border border-slate-100 bg-slate-50 text-slate-500 font-medium text-sm">
+            {selectedDegree || "Automatique"}
           </div>
-          <Select value={selectedStudentId} onValueChange={onStudentChange}>
-            <SelectTrigger id="student-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
-              <SelectValue placeholder="Sélectionner l'élève" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200">
-              {studentsDatabase.map((s) => (
-                <SelectItem key={s.id} value={s.id}>{s.firstName} {s.lastName}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Sexe */}

@@ -9,19 +9,35 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Save, Trash2, Users, Database, ChevronRight, Loader2 } from "lucide-center";
-import { GraduationCap as GradIcon, Save as SaveIcon, Trash2 as TrashIcon, Users as UsersIcon, Database as DbIcon, ChevronRight as NextIcon, Loader2 as LoaderIcon } from "lucide-react";
+import { Save as SaveIcon, Trash2 as TrashIcon, Users as UsersIcon, Database as DbIcon, ChevronRight as NextIcon, Loader2 as LoaderIcon, GraduationCap as GradIcon } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
-import { studentsDatabase, degrees } from "@/data/students";
+import { studentsDatabase, classesByDegree } from "@/data/students";
 
 const Index = () => {
+  const [selectedClass, setSelectedClass] = React.useState<string>(studentsDatabase[0].className);
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(studentsDatabase[0].id);
-  const [selectedDegree, setSelectedDegree] = React.useState<string>(degrees[0]);
   const [isSaving, setIsSaving] = React.useState(false);
 
+  // Trouver le degré correspondant à la classe
+  const selectedDegree = React.useMemo(() => {
+    for (const [degree, classes] of Object.entries(classesByDegree)) {
+      if (classes.includes(selectedClass)) return degree;
+    }
+    return "1er degré";
+  }, [selectedClass]);
+
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    // Sélectionner le premier élève de la nouvelle classe
+    const firstInClass = studentsDatabase.find(s => s.className === className);
+    if (firstInClass) {
+      setSelectedStudentId(firstInClass.id);
+    }
+  };
 
   const handleSave = async () => {
     if (!currentStudent) return;
@@ -40,6 +56,7 @@ const Index = () => {
     
     if (currentIndex < studentsDatabase.length - 1) {
       const nextStudent = studentsDatabase[currentIndex + 1];
+      setSelectedClass(nextStudent.className);
       setSelectedStudentId(nextStudent.id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -83,8 +100,9 @@ const Index = () => {
           <StudentHeader 
             selectedStudentId={selectedStudentId} 
             onStudentChange={setSelectedStudentId}
+            selectedClass={selectedClass}
+            onClassChange={handleClassChange}
             selectedDegree={selectedDegree}
-            onDegreeChange={setSelectedDegree}
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

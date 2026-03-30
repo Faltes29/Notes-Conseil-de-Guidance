@@ -4,20 +4,45 @@ export interface Student {
   lastName: string;
   gender: 'f' | 'm';
   className: string;
+  degree: string;
 }
 
-export const studentsDatabase: Student[] = [
-  { id: "1", firstName: "Alice", lastName: "Martin", gender: 'f', className: "1ère" },
-  { id: "2", firstName: "Lucas", lastName: "Bernard", gender: 'm', className: "2ème" },
-  { id: "3", firstName: "Emma", lastName: "Petit", gender: 'f', className: "3ème" },
-  { id: "4", firstName: "Thomas", lastName: "Richard", gender: 'm', className: "4ème" },
-  { id: "5", firstName: "Chloé", lastName: "Durand", gender: 'f', className: "5ème" },
-  { id: "6", firstName: "Julien", lastName: "Faure", gender: 'm', className: "6ème" },
-];
+export const classesByDegree: Record<string, string[]> = {
+  "1er degré": ["Samourai", "Simpson", "Piraterie", "Hunters", "Avengers", "GoldenEagles", "Mugiwaras", "ProtègeTibias", "Shinigamis"],
+  "2ème degré": ["Atlantide", "Sinaloa", "Estrelas", "Shadow", "Agora", "CasaDelPapel", "Celestials", "CosaNostra", "Inconnus", "Korczak"],
+  "3ème degré": ["Aurora", "Suenos", "Miyazaki", "NovaCorp", "Visionnaires", "Astreons", "OPPS", "Raspipas", "Zion"]
+};
 
-export const classes = ["1ère", "2ème", "3ème", "4ème", "5ème", "6ème"];
+export const classes = Object.values(classesByDegree).flat();
 export const periods = ["Période 1", "Période 2", "Période 3"];
 export const degrees = ["1er degré", "2ème degré", "3ème degré"];
+
+const firstNames = ["Léo", "Emma", "Gabriel", "Jade", "Raphaël", "Louise", "Lucas", "Alice", "Arthur", "Lina", "Hugo", "Chloé", "Maël", "Léa", "Noah", "Mila", "Liam", "Manon", "Adam", "Inès", "Ethan", "Zoé", "Sacha", "Camille"];
+const lastNames = ["Martin", "Bernard", "Thomas", "Petit", "Robert", "Richard", "Durand", "Dubois", "Moreau", "Laurent", "Simon", "Michel", "Lefebvre", "Leroy", "Roux", "David", "Bertrand", "Morel", "Fournier", "Girard", "Bonnet", "Dupont", "Lambert", "Fontaine"];
+
+const generateStudents = (): Student[] => {
+  const students: Student[] = [];
+  let idCounter = 1;
+
+  Object.entries(classesByDegree).forEach(([degree, degreeClasses]) => {
+    degreeClasses.forEach((className) => {
+      for (let i = 0; i < 24; i++) {
+        const gender = Math.random() > 0.5 ? 'f' : 'm';
+        students.push({
+          id: (idCounter++).toString(),
+          firstName: firstNames[i % firstNames.length],
+          lastName: `${lastNames[(i + idCounter) % lastNames.length]} ${String.fromCharCode(65 + (idCounter % 26))}`,
+          gender,
+          className,
+          degree
+        });
+      }
+    });
+  });
+  return students;
+};
+
+export const studentsDatabase = generateStudents();
 
 export const degreeData = {
   "1er degré": {
