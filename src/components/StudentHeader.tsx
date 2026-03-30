@@ -5,21 +5,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { User, School, Users, CalendarDays } from "lucide-react";
-import { studentsDatabase, classes, periods } from "@/data/students";
+import { User, School, Users, CalendarDays, Layers } from "lucide-react";
+import { studentsDatabase, classes, periods, degrees } from "@/data/students";
 
 interface StudentHeaderProps {
   selectedStudentId: string;
   onStudentChange: (id: string) => void;
+  selectedDegree: string;
+  onDegreeChange: (degree: string) => void;
 }
 
-const StudentHeader = ({ selectedStudentId, onStudentChange }: StudentHeaderProps) => {
+const StudentHeader = ({ selectedStudentId, onStudentChange, selectedDegree, onDegreeChange }: StudentHeaderProps) => {
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
 
   return (
     <Card className="border-none shadow-lg bg-white/80 backdrop-blur-md overflow-hidden">
       <div className="h-2 bg-violet-500 w-full" />
-      <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Degré */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-slate-600 mb-1">
+            <Layers className="w-4 h-4" />
+            <Label htmlFor="degree-select" className="font-semibold">Degré</Label>
+          </div>
+          <Select value={selectedDegree} onValueChange={onDegreeChange}>
+            <SelectTrigger id="degree-select" className="rounded-xl border-slate-200 bg-white focus:ring-violet-500">
+              <SelectValue placeholder="Choisir le degré" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-200">
+              {degrees.map((d) => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Période */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-slate-600 mb-1">
