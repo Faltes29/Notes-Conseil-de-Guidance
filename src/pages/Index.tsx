@@ -113,7 +113,7 @@ const Index = () => {
             <GradIcon className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-            Bilan Scolaire Personnalisé
+            Prise de notes - Conseil de guidance
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Complétez les informations ci-dessous pour générer le suivi de l'élève.
