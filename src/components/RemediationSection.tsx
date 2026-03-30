@@ -7,17 +7,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { LifeBuoy, AlertCircle, Info, Plus, Trash2 } from "lucide-react";
-
-const coursesList = [
-  "Mathématiques", "Français", "Histoire-Géographie", "Sciences", 
-  "Anglais", "EPS", "Arts Plastiques", "Musique"
-];
+import { degreeData } from "@/data/students";
 
 interface RemediationRow {
   id: number;
 }
 
-const RemediationSection = () => {
+interface RemediationSectionProps {
+  degree: string;
+}
+
+const RemediationSection = ({ degree }: RemediationSectionProps) => {
+  const subjects = degreeData[degree as keyof typeof degreeData]?.subjects || [];
   const [rows, setRows] = React.useState<RemediationRow[]>([{ id: Date.now() }]);
 
   const addRow = () => {
@@ -57,7 +58,7 @@ const RemediationSection = () => {
                   <SelectValue placeholder="Sélectionner une matière" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  {coursesList.map((course) => (
+                  {subjects.map((course) => (
                     <SelectItem key={course} value={course.toLowerCase()}>{course}</SelectItem>
                   ))}
                 </SelectContent>
