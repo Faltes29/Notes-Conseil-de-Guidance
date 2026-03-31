@@ -19,11 +19,18 @@ const variables = [
   { id: "{{echecs}}", label: "Échecs", color: "bg-red-100 text-red-700 border-red-200" },
   { id: "{{difficultes}}", label: "Difficultés", color: "bg-amber-100 text-amber-700 border-amber-200" },
   { id: "{{non_evalues}}", label: "Non-évalués", color: "bg-slate-100 text-slate-700 border-slate-200" },
-  { id: "{{competences}}", label: "Compétences", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  { id: "{{competences_transversales}}", label: "Compétences transversales", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   { id: "{{forces}}", label: "Forces", color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
   { id: "{{freins}}", label: "Freins", color: "bg-rose-50 text-rose-600 border-rose-100" },
   { id: "{{conseils}}", label: "Conseils", color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-  { id: "{{autonomie}}", label: "Autonomie", color: "bg-violet-50 text-violet-600 border-violet-100" },
+  { id: "{{travail_autonome_maitrise}}", label: "Travail Autonome Maîtrisé", color: "bg-violet-100 text-violet-700 border-violet-200" },
+  { id: "{{travail_autonome_non_maitrise}}", label: "Travail Autonome Non Maîtrisé", color: "bg-violet-50 text-violet-600 border-violet-100" },
+  { id: "{{remediations_obligatoires}}", label: "Remédiations Obligatoires", color: "bg-orange-100 text-orange-700 border-orange-200" },
+  { id: "{{remediations_conseillees}}", label: "Remédiations Conseillées", color: "bg-orange-50 text-orange-600 border-orange-100" },
+  { id: "{{personne_ressource_1}}", label: "Personne Ressource 1", color: "bg-cyan-100 text-cyan-700 border-cyan-200" },
+  { id: "{{motif_rdv_1}}", label: "Motif de RDV 1", color: "bg-cyan-50 text-cyan-600 border-cyan-100" },
+  { id: "{{personne_ressource_2}}", label: "Personne Ressource 2", color: "bg-teal-100 text-teal-700 border-teal-200" },
+  { id: "{{motif_rdv_2}}", label: "Motif de RDV 2", color: "bg-teal-50 text-teal-600 border-teal-100" },
 ];
 
 const Settings = () => {
