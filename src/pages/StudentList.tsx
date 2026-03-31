@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -21,11 +22,13 @@ import { useQuery } from "@tanstack/react-query";
 import { classes, periods } from "@/data/students";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { showSuccess } from "@/utils/toast";
 
 const StudentList = () => {
   const navigate = useNavigate();
   const [selectedClass, setSelectedClass] = React.useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>("all");
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ['reports', selectedClass, selectedPeriod],
@@ -45,6 +48,30 @@ const StudentList = () => {
     }
   });
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked && reports) {
+      setSelectedIds(new Set(reports.map(r => r.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const toggleSelectRow = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleExport = () => {
+    const count = selectedIds.size > 0 ? selectedIds.size : (reports?.length || 0);
+    showSuccess(`Exportation de ${count} enregistrement(s) en cours...`);
+    // Logique d'exportation réelle à implémenter ici (CSV/PDF)
+  };
+
   const getSituationIcon = (situation: string) => {
     switch (situation) {
       case 'well': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
@@ -55,9 +82,10 @@ const StudentList = () => {
   };
 
   const handleEdit = (report: any) => {
-    // On redirige vers l'index avec les paramètres de l'élève et de la période
     navigate(`/?studentId=${report.student_id}&period=${report.period}&class=${report.class_name}`);
   };
+
+  const isAllSelected = reports && reports.length > 0 && selectedIds.size === reports.length;
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -104,9 +132,13 @@ const StudentList = () => {
               </Select>
             </div>
 
-            <Button variant="outline" className="rounded-xl border-slate-200">
+            <Button 
+              onClick={handleExport}
+              variant="outline" 
+              className="rounded-xl border-slate-200 bg-white hover:bg-slate-50"
+            >
               <Download className="w-4 h-4 mr-2" />
-              Exporter
+              {selectedIds.size > 0 ? `Exporter (${selectedIds.size})` : "Tout exporter"}
             </Button>
           </div>
         </div>
@@ -118,6 +150,16 @@ const StudentList = () => {
               <Table>
                 <TableHeader className="bg-slate-50/50">
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <div className="flex items-center justify-center">
+                        <Checkbox 
+                          checked={isAllSelected}
+                          onCheckedChange={(checked) => toggleSelectAll(!!checked)}
+                          aria-label="Tout sélectionner"
+                          className="border-slate-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+                        />
+                      </div>
+                    </TableHead>
                     <TableHead className="font-bold text-slate-700">Date / Heure</TableHead>
                     <TableHead className="font-bold text-slate-700">Élève</TableHead>
                     <TableHead className="font-bold text-slate-700">Classe</TableHead>
@@ -131,19 +173,29 @@ const StudentList = () => {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center text-slate-500">
+                      <TableCell colSpan={9} className="h-32 text-center text-slate-500">
                         Chargement des données...
                       </TableCell>
                     </TableRow>
                   ) : reports?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center text-slate-500">
+                      <TableCell colSpan={9} className="h-32 text-center text-slate-500">
                         Aucune donnée enregistrée pour ces critères.
                       </TableCell>
                     </TableRow>
                   ) : (
                     reports?.map((report) => (
                       <TableRow key={report.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            <Checkbox 
+                              checked={selectedIds.has(report.id)}
+                              onCheckedChange={(checked) => toggleSelectRow(report.id, !!checked)}
+                              aria-label={`Sélectionner ${report.student_name}`}
+                              className="border-slate-300 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+                            />
+                          </div>
+                        </TableCell>
                         <TableCell className="text-xs text-slate-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
