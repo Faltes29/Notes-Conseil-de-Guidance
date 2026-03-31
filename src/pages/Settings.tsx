@@ -56,7 +56,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <header className="space-y-4 mb-8">
           <Link to="/" className="text-violet-600 hover:text-violet-700 flex items-center gap-2 text-sm font-medium mb-2">
@@ -76,14 +76,14 @@ const Settings = () => {
 
         <main className="space-y-8">
           {/* Guide des variables */}
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm border-l-4 border-l-violet-500">
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm border-l-4 border-l-violet-500 sticky top-4 z-10">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
                 <Sparkles className="w-5 h-5 text-violet-500" />
                 Variables dynamiques
               </CardTitle>
               <CardDescription>
-                Cliquez sur une variable pour l'insérer dans le dernier champ sélectionné. Elles seront remplacées par les données réelles lors de la génération.
+                Cliquez sur une variable pour l'insérer dans le champ actif.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -96,66 +96,70 @@ const Settings = () => {
                     onClick={() => insertVariable(v.id)}
                     className={`rounded-xl border-2 transition-all hover:scale-105 ${v.color}`}
                   >
-                    {v.label} <span className="ml-1 opacity-50 text-[10px]">{v.id}</span>
+                    {v.label}
                   </Button>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="border-b border-slate-100 bg-white/50">
-              <div className="flex items-center gap-2">
-                <MessageSquareQuote className="w-5 h-5 text-violet-500" />
-                <CardTitle>Modèles de commentaires</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {periods.map((period) => (
-                  <div key={period} className="space-y-6">
-                    <h3 className="font-bold text-lg text-slate-800 border-b pb-2 border-violet-100 flex items-center justify-between">
-                      {period}
-                      <Badge variant="secondary" className="text-[10px] bg-slate-100">Modèles</Badge>
-                    </h3>
-                    <div className="space-y-4">
-                      {cases.map((cas) => {
-                        const fieldId = `${period}-${cas}`;
-                        return (
-                          <div key={fieldId} className="space-y-2">
-                            <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-                              {cas}
-                              {activeField === fieldId && <span className="text-violet-500 animate-pulse">● Actif</span>}
-                            </Label>
-                            <Textarea 
-                              ref={(el) => (textareasRef.current[fieldId] = el)}
-                              onFocus={() => setActiveField(fieldId)}
-                              placeholder={`Ex: {{prenom}} a rencontré des difficultés en {{difficultes}}...`}
-                              className={`min-h-[150px] rounded-xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all ${activeField === fieldId ? 'ring-2 ring-violet-100 border-violet-300' : ''}`}
-                            />
-                          </div>
-                        );
-                      })}
+          <div className="space-y-12">
+            {periods.map((period) => (
+              <Card key={period} className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-white/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquareQuote className="w-5 h-5 text-violet-500" />
+                      <CardTitle>{period}</CardTitle>
                     </div>
+                    <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-100">
+                      3 Modèles
+                    </Badge>
                   </div>
-                ))}
-              </div>
+                </CardHeader>
+                <CardContent className="p-6 space-y-8">
+                  <div className="grid grid-cols-1 gap-6">
+                    {cases.map((cas) => {
+                      const fieldId = `${period}-${cas}`;
+                      return (
+                        <div key={fieldId} className="space-y-3">
+                          <Label className="text-sm font-bold text-slate-700 flex items-center justify-between">
+                            <span>{period} — {cas}</span>
+                            {activeField === fieldId && (
+                              <span className="text-violet-500 text-xs animate-pulse flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                                Champ actif
+                              </span>
+                            )}
+                          </Label>
+                          <Textarea 
+                            ref={(el) => (textareasRef.current[fieldId] = el)}
+                            onFocus={() => setActiveField(fieldId)}
+                            placeholder={`Ex: {{prenom}} a bien progressé ce trimestre...`}
+                            className={`min-h-[120px] rounded-2xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all p-4 leading-relaxed ${activeField === fieldId ? 'ring-4 ring-violet-100 border-violet-300 shadow-inner' : ''}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                  <Info className="w-4 h-4" />
-                  <span>Les modifications sont enregistrées localement.</span>
-                </div>
-                <Button 
-                  onClick={handleSave}
-                  className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 rounded-2xl text-lg font-bold shadow-lg shadow-violet-100 transition-all hover:scale-105"
-                >
-                  <Save className="w-5 h-5 mr-2" />
-                  Enregistrer les modèles
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-lg">
+            <div className="flex items-center gap-2 text-slate-500 text-sm">
+              <Info className="w-4 h-4" />
+              <span>Les modèles sont sauvegardés pour vos prochaines saisies.</span>
+            </div>
+            <Button 
+              onClick={handleSave}
+              className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-10 py-7 rounded-2xl text-lg font-bold shadow-xl shadow-violet-100 transition-all hover:scale-105"
+            >
+              <Save className="w-5 h-5 mr-2" />
+              Enregistrer tout
+            </Button>
+          </div>
         </main>
 
         <footer className="pt-12">
