@@ -1,61 +1,93 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Search, FileText, ArrowLeft, Calendar, UserCircle } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Users, ArrowLeft, Download, Filter, Search, AlertCircle, CheckCircle2, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
-import { studentsDatabase, classes, periods } from "@/data/students";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { classes, periods } from "@/data/students";
 
 const StudentList = () => {
-  const [selectedClass, setSelectedClass] = React.useState<string>("");
+  const [selectedClass, setSelectedClass] = React.useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>("all");
 
-  const filteredStudents = studentsDatabase.filter(s => {
-    const matchClass = selectedClass ? s.className.toLowerCase() === selectedClass.toLowerCase() : false;
-    return matchClass;
+  const { data: reports, isLoading } = useQuery({
+    queryKey: ['reports', selectedClass, selectedPeriod],
+    queryFn: async () => {
+      let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
+      
+      if (selectedClass !== "all") {
+        query = query.eq('class_name', selectedClass);
+      }
+      if (selectedPeriod !== "all") {
+        query = query.eq('period', selectedPeriod);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    }
   });
+
+  const getSituationIcon = (situation: string) => {
+    switch (situation) {
+      case 'well': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+      case 'difficulties': return <AlertCircle className="w-4 h-4 text-amber-500" />;
+      case 'alarm': return <BellRing className="w-4 h-4 text-rose-500" />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <Link to="/" className="text-indigo-600 hover:text-indigo-700 flex items-center gap-2 text-sm font-medium mb-2">
+            <Link to="/" className="text-violet-600 hover:text-violet-700 flex items-center gap-2 text-sm font-medium mb-2">
               <ArrowLeft className="w-4 h-4" />
               Retour au formulaire
             </Link>
             <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-              <Users className="text-indigo-600" />
-              Liste des Élèves
+              <Users className="text-violet-600" />
+              Suivi Global des Élèves
             </h1>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Classe</label>
-              <Select onValueChange={setSelectedClass}>
-                <SelectTrigger className="rounded-xl border-slate-200 bg-white shadow-sm">
-                  <SelectValue placeholder="Choisir une classe" />
+          <div className="flex flex-wrap gap-3">
+            <div className="w-40">
+              <Select value={selectedClass} onValueChange={setSelectedClass}>
+                <SelectTrigger className="rounded-xl bg-white">
+                  <SelectValue placeholder="Classe" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   {classes.map((c) => (
-                    <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Période</label>
-              <Select defaultValue="all" onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="rounded-xl border-slate-200 bg-white shadow-sm">
-                  <SelectValue placeholder="Toutes les périodes" />
+            <div className="w-40">
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="rounded-xl bg-white">
+                  <SelectValue placeholder="Période" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent>
                   <SelectItem value="all">Toutes les périodes</SelectItem>
                   {periods.map((p) => (
                     <SelectItem key={p} value={p.toLowerCase()}>{p}</SelectItem>
@@ -63,56 +95,134 @@ const StudentList = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            <Button variant="outline" className="rounded-xl border-slate-200">
+              <Download className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
           </div>
         </div>
 
-        {/* Content */}
-        {selectedClass ? (
-          <div className="grid gap-4">
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
-                <Card key={student.id} className="border-none shadow-md hover:shadow-lg transition-shadow bg-white overflow-hidden group">
-                  <CardContent className="p-0">
-                    <div className="flex items-center justify-between p-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                          <UserCircle className="w-7 h-7" />
-                        </div>
-                        <div>
+        {/* Table Card */}
+        <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+          <CardContent className="p-0">
+            <ScrollArea className="w-full whitespace-nowrap">
+              <Table>
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow>
+                    <TableHead className="font-bold text-slate-700">Élève</TableHead>
+                    <TableHead className="font-bold text-slate-700">Classe</TableHead>
+                    <TableHead className="font-bold text-slate-700">Période</TableHead>
+                    <TableHead className="font-bold text-slate-700">Situation</TableHead>
+                    <TableHead className="font-bold text-slate-700">Résultats</TableHead>
+                    <TableHead className="font-bold text-slate-700">Compétences</TableHead>
+                    <TableHead className="font-bold text-slate-700">Autonomie</TableHead>
+                    <TableHead className="font-bold text-slate-700">Observations</TableHead>
+                    <TableHead className="font-bold text-slate-700">Remédiation</TableHead>
+                    <TableHead className="font-bold text-slate-700">Commentaire Carnet</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={10} className="h-32 text-center text-slate-500">
+                        Chargement des données...
+                      </TableCell>
+                    </TableRow>
+                  ) : reports?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={10} className="h-32 text-center text-slate-500">
+                        Aucune donnée enregistrée pour ces critères.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    reports?.map((report) => (
+                      <TableRow key={report.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableCell className="font-semibold text-slate-900">{report.student_name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-100">
+                            {report.class_name}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="capitalize">{report.period}</TableCell>
+                        <TableCell>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-slate-800 text-lg">{student.firstName} {student.lastName}</h3>
-                            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] uppercase">
-                              {student.className}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Dernier bilan : 12/05/2024
+                            {getSituationIcon(report.observations?.situation)}
+                            <span className="text-xs font-medium">
+                              {report.observations?.situation === 'well' ? 'Bien' : 
+                               report.observations?.situation === 'difficulties' ? 'Difficultés' : 
+                               report.observations?.situation === 'alarm' ? 'Alarme' : '-'}
                             </span>
                           </div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon" className="rounded-full hover:bg-indigo-50 hover:text-indigo-600">
-                        <FileText className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 font-medium">Aucun élève trouvé dans cette classe.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-indigo-50/50 rounded-3xl border-2 border-dashed border-indigo-100">
-            <Users className="w-12 h-12 text-indigo-200 mx-auto mb-4" />
-            <p className="text-indigo-600 font-medium">Veuillez sélectionner une classe pour voir les élèves.</p>
-          </div>
-        )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {Object.entries(report.course_results || {}).map(([subject, status]: [string, any]) => (
+                              status !== 'none' && (
+                                <Badge key={subject} variant="outline" className={
+                                  status === 'failure' ? "border-red-200 text-red-600 bg-red-50" : 
+                                  status === 'difficulty' ? "border-amber-200 text-amber-600 bg-amber-50" : 
+                                  "border-slate-200 text-slate-600"
+                                }>
+                                  {subject}
+                                </Badge>
+                              )
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {(report.transversal_skills || []).map((skill: string) => (
+                              <Badge key={skill} variant="outline" className="text-[10px] border-emerald-100 text-emerald-700 bg-emerald-50">
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs space-y-1">
+                            {Object.entries(report.autonomous_work || {}).map(([skill, value]: [string, any]) => (
+                              value !== null && (
+                                <div key={skill} className="flex items-center gap-1">
+                                  {value ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <AlertCircle className="w-3 h-3 text-red-400" />}
+                                  <span className="truncate max-w-[100px]">{skill}</span>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-[250px] text-xs space-y-1">
+                            {report.observations?.forces && <p><span className="font-bold text-emerald-600">Forces:</span> {report.observations.forces}</p>}
+                            {report.observations?.freins && <p><span className="font-bold text-amber-600">Freins:</span> {report.observations.freins}</p>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs">
+                            {(report.remediation || []).map((rem: any, i: number) => (
+                              <div key={i} className="flex items-center gap-1">
+                                <Badge variant="outline" className="text-[10px]">{rem.subject}</Badge>
+                                <span className={rem.status === 'obligatoire' ? "text-red-500 font-bold" : "text-blue-500"}>
+                                  {rem.status}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="max-w-[200px] truncate text-xs italic text-slate-500">
+                            {report.observations?.progression_comment || "Aucun commentaire"}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
