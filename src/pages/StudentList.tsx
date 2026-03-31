@@ -9,18 +9,21 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Users, ArrowLeft, Download, Filter, Search, AlertCircle, CheckCircle2, BellRing } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { classes, periods } from "@/data/students";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const StudentList = () => {
+  const navigate = useNavigate();
   const [selectedClass, setSelectedClass] = React.useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>("all");
 
@@ -49,6 +52,11 @@ const StudentList = () => {
       case 'alarm': return <BellRing className="w-4 h-4 text-rose-500" />;
       default: return null;
     }
+  };
+
+  const handleEdit = (report: any) => {
+    // On redirige vers l'index avec les paramètres de l'élève et de la période
+    navigate(`/?studentId=${report.student_id}&period=${report.period}&class=${report.class_name}`);
   };
 
   return (
@@ -110,34 +118,38 @@ const StudentList = () => {
               <Table>
                 <TableHeader className="bg-slate-50/50">
                   <TableRow>
+                    <TableHead className="font-bold text-slate-700">Date / Heure</TableHead>
                     <TableHead className="font-bold text-slate-700">Élève</TableHead>
                     <TableHead className="font-bold text-slate-700">Classe</TableHead>
                     <TableHead className="font-bold text-slate-700">Période</TableHead>
                     <TableHead className="font-bold text-slate-700">Situation</TableHead>
                     <TableHead className="font-bold text-slate-700">Résultats</TableHead>
                     <TableHead className="font-bold text-slate-700">Compétences</TableHead>
-                    <TableHead className="font-bold text-slate-700">Autonomie</TableHead>
-                    <TableHead className="font-bold text-slate-700">Observations</TableHead>
-                    <TableHead className="font-bold text-slate-700">Remédiation</TableHead>
-                    <TableHead className="font-bold text-slate-700">Commentaire Carnet</TableHead>
+                    <TableHead className="font-bold text-slate-700">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="h-32 text-center text-slate-500">
+                      <TableCell colSpan={8} className="h-32 text-center text-slate-500">
                         Chargement des données...
                       </TableCell>
                     </TableRow>
                   ) : reports?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="h-32 text-center text-slate-500">
+                      <TableCell colSpan={8} className="h-32 text-center text-slate-500">
                         Aucune donnée enregistrée pour ces critères.
                       </TableCell>
                     </TableRow>
                   ) : (
                     reports?.map((report) => (
                       <TableRow key={report.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableCell className="text-xs text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(report.created_at), "dd/MM/yyyy HH:mm", { locale: fr })}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-semibold text-slate-900">{report.student_name}</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-100">
@@ -180,39 +192,15 @@ const StudentList = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-xs space-y-1">
-                            {Object.entries(report.autonomous_work || {}).map(([skill, value]: [string, any]) => (
-                              value !== null && (
-                                <div key={skill} className="flex items-center gap-1">
-                                  {value ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <AlertCircle className="w-3 h-3 text-red-400" />}
-                                  <span className="truncate max-w-[100px]">{skill}</span>
-                                </div>
-                              )
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-[250px] text-xs space-y-1">
-                            {report.observations?.forces && <p><span className="font-bold text-emerald-600">Forces:</span> {report.observations.forces}</p>}
-                            {report.observations?.freins && <p><span className="font-bold text-amber-600">Freins:</span> {report.observations.freins}</p>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-xs">
-                            {(report.remediation || []).map((rem: any, i: number) => (
-                              <div key={i} className="flex items-center gap-1">
-                                <Badge variant="outline" className="text-[10px]">{rem.subject}</Badge>
-                                <span className={rem.status === 'obligatoire' ? "text-red-500 font-bold" : "text-blue-500"}>
-                                  {rem.status}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <p className="max-w-[200px] truncate text-xs italic text-slate-500">
-                            {report.observations?.progression_comment || "Aucun commentaire"}
-                          </p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEdit(report)}
+                            className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Modifier
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))

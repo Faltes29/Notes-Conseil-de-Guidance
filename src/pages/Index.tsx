@@ -21,14 +21,20 @@ import {
 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { studentsDatabase, classesByDegree } from "@/data/students";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [selectedClass, setSelectedClass] = React.useState<string>(studentsDatabase[0].className);
-  const [selectedStudentId, setSelectedStudentId] = React.useState<string>(studentsDatabase[0].id);
-  const [selectedPeriod, setSelectedPeriod] = React.useState<string>("période 1");
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const initialStudentId = searchParams.get('studentId') || studentsDatabase[0].id;
+  const initialClass = searchParams.get('class') || studentsDatabase.find(s => s.id === initialStudentId)?.className || studentsDatabase[0].className;
+  const initialPeriod = searchParams.get('period') || "période 1";
+
+  const [selectedClass, setSelectedClass] = React.useState<string>(initialClass);
+  const [selectedStudentId, setSelectedStudentId] = React.useState<string>(initialStudentId);
+  const [selectedPeriod, setSelectedPeriod] = React.useState<string>(initialPeriod);
   const [isSaving, setIsSaving] = React.useState(false);
 
   // Trouver le degré correspondant à la classe
@@ -55,20 +61,16 @@ const Index = () => {
     
     setIsSaving(true);
     try {
-      // Note: Dans une application réelle, nous utiliserions un état global ou des refs 
-      // pour collecter les données de tous les composants enfants.
-      // Ici, nous simulons l'enregistrement avec les métadonnées de base.
       const { error } = await supabase.from('reports').upsert({
         student_id: currentStudent.id,
         student_name: `${currentStudent.firstName} ${currentStudent.lastName}`,
         period: selectedPeriod,
         class_name: selectedClass,
-        // Les données JSON seraient normalement extraites des états des composants
         course_results: {}, 
         transversal_skills: [],
         autonomous_work: {},
         observations: {
-          situation: 'well', // Valeur par défaut pour l'exemple
+          situation: 'well',
           progression_comment: ''
         },
         remediation: [],
