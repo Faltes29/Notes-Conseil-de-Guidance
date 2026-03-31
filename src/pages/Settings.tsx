@@ -3,13 +3,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Settings as SettingsIcon, Save, ArrowLeft, MessageSquareQuote, Info, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import HighlightedTextarea from "@/components/HighlightedTextarea";
 
 const periods = ["Période 1", "Période 2", "Période 3"];
 const cases = ["Cas 1", "Cas 2", "Cas 3"];
@@ -53,13 +53,7 @@ const Settings = () => {
     const before = text.substring(0, start);
     const after = text.substring(end);
 
-    const newValue = before + variableId + after;
-    textarea.value = newValue;
-    
-    // Déclencher manuellement l'événement de changement pour le composant HighlightedTextarea
-    const event = new Event('input', { bubbles: true });
-    textarea.dispatchEvent(event);
-
+    textarea.value = before + variableId + after;
     textarea.focus();
     
     // Déplacer le curseur après la variable insérée
@@ -145,11 +139,11 @@ const Settings = () => {
                               </span>
                             )}
                           </Label>
-                          <HighlightedTextarea 
+                          <Textarea 
                             ref={(el) => (textareasRef.current[fieldId] = el)}
                             onFocus={() => setActiveField(fieldId)}
                             placeholder={`Ex: {{prenom}} a bien progressé ce trimestre...`}
-                            className={activeField === fieldId ? 'rounded-2xl border-violet-300 ring-4 ring-violet-100 shadow-inner' : 'rounded-2xl border-slate-200'}
+                            className={`min-h-[120px] rounded-2xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all p-4 leading-relaxed ${activeField === fieldId ? 'ring-4 ring-violet-100 border-violet-300 shadow-inner' : ''}`}
                           />
                         </div>
                       );
