@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { 
   Save as SaveIcon, 
   Users as UsersIcon, 
-  Database as DbIcon, 
   ChevronRight as NextIcon, 
   ChevronLeft as PrevIcon,
   Loader2 as LoaderIcon, 
@@ -128,12 +127,6 @@ const Index = () => {
               <Button variant="outline" className="w-full sm:w-auto rounded-xl border-violet-100 text-violet-600 hover:bg-violet-50">
                 <UsersIcon className="w-4 h-4 mr-2" />
                 Liste
-              </Button>
-            </Link>
-            <Link to="/database">
-              <Button variant="outline" className="w-full sm:w-auto rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50">
-                <DbIcon className="w-4 h-4 mr-2" />
-                Base de données
               </Button>
             </Link>
           </div>

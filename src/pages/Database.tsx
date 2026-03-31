@@ -9,7 +9,7 @@ import ObservationFields from "@/components/ObservationFields";
 import RemediationSection from "@/components/RemediationSection";
 import SensitiveInfo from "@/components/SensitiveInfo";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Save, Trash2, Users, Database, ChevronRight } from "lucide-react";
+import { GraduationCap, Save, Trash2, Users, ChevronRight } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
@@ -66,12 +66,6 @@ const DatabasePage = () => {
               <Button variant="outline" className="w-full sm:w-auto rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50">
                 <Users className="w-4 h-4 mr-2" />
                 Liste
-              </Button>
-            </Link>
-            <Link to="/database">
-              <Button variant="outline" className="w-full sm:w-auto rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50">
-                <Database className="w-4 h-4 mr-2" />
-                Base de données
               </Button>
             </Link>
           </div>
