@@ -13,12 +13,29 @@ import { GraduationCap, Save, Trash2, Users, Database, ChevronRight } from "luci
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
-import { studentsDatabase } from "@/data/students";
+import { studentsDatabase, classesByDegree } from "@/data/students";
 
-const Index = () => {
+const DatabasePage = () => {
+  const [selectedClass, setSelectedClass] = React.useState<string>(studentsDatabase[0].className);
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(studentsDatabase[0].id);
 
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
+
+  // Trouver le degré correspondant à la classe
+  const selectedDegree = React.useMemo(() => {
+    for (const [degree, classes] of Object.entries(classesByDegree)) {
+      if (classes.includes(selectedClass)) return degree;
+    }
+    return "1er degré";
+  }, [selectedClass]);
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    const firstInClass = studentsDatabase.find(s => s.className === className);
+    if (firstInClass) {
+      setSelectedStudentId(firstInClass.id);
+    }
+  };
 
   const handleSave = () => {
     showSuccess(`Le bilan de ${currentStudent?.firstName} ${currentStudent?.lastName} a été enregistré avec succès !`);
@@ -31,6 +48,7 @@ const Index = () => {
     
     if (currentIndex < studentsDatabase.length - 1) {
       const nextStudent = studentsDatabase[currentIndex + 1];
+      setSelectedClass(nextStudent.className);
       setSelectedStudentId(nextStudent.id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -73,20 +91,23 @@ const Index = () => {
         <main className="space-y-8">
           <StudentHeader 
             selectedStudentId={selectedStudentId} 
-            onStudentChange={setSelectedStudentId} 
+            onStudentChange={setSelectedStudentId}
+            selectedClass={selectedClass}
+            onClassChange={handleClassChange}
+            selectedDegree={selectedDegree}
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <CourseSelector />
+            <CourseSelector degree={selectedDegree} />
             <div className="space-y-8">
-              <SkillsSelector />
+              <SkillsSelector degree={selectedDegree} />
               <AutonomousWork />
             </div>
           </div>
 
           <ObservationFields />
           
-          <RemediationSection />
+          <RemediationSection degree={selectedDegree} />
 
           <SensitiveInfo />
           
@@ -127,4 +148,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default DatabasePage;
