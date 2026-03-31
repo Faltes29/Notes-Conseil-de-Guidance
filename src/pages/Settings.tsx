@@ -14,7 +14,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 const periods = ["Période 1", "Période 2", "Période 3"];
 const cases = ["Cas 1", "Cas 2", "Cas 3"];
 
-const variables = [
+export const variables = [
   { id: "{{prenom}}", label: "Prénom", color: "bg-blue-100 text-blue-700 border-blue-200" },
   { id: "{{sexe}}", label: "Sexe (Il/Elle)", color: "bg-pink-100 text-pink-700 border-pink-200" },
   { id: "{{echecs}}", label: "Échecs", color: "bg-red-100 text-red-700 border-red-200" },
@@ -36,10 +36,24 @@ const variables = [
 
 const Settings = () => {
   const [activeField, setActiveField] = React.useState<string | null>(null);
+  const [templates, setTemplates] = React.useState<Record<string, string>>({});
   const textareasRef = React.useRef<Record<string, HTMLTextAreaElement | null>>({});
 
+  // Charger les modèles au démarrage
+  React.useEffect(() => {
+    const saved = localStorage.getItem('comment_templates');
+    if (saved) {
+      setTemplates(JSON.parse(saved));
+    }
+  }, []);
+
   const handleSave = () => {
+    localStorage.setItem('comment_templates', JSON.stringify(templates));
     showSuccess("Les modèles de commentaires ont été enregistrés !");
+  };
+
+  const updateTemplate = (id: string, value: string) => {
+    setTemplates(prev => ({ ...prev, [id]: value }));
   };
 
   const insertVariable = (variableId: string) => {
@@ -50,16 +64,19 @@ const Settings = () => {
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const text = textarea.value;
+    const text = templates[activeField] || "";
     const before = text.substring(0, start);
     const after = text.substring(end);
 
-    textarea.value = before + variableId + after;
-    textarea.focus();
+    const newValue = before + variableId + after;
+    updateTemplate(activeField, newValue);
     
-    // Déplacer le curseur après la variable insérée
-    const newPos = start + variableId.length;
-    textarea.setSelectionRange(newPos, newPos);
+    // Redonner le focus et placer le curseur
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + variableId.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
   };
 
   return (
@@ -142,6 +159,8 @@ const Settings = () => {
                           </Label>
                           <Textarea 
                             ref={(el) => (textareasRef.current[fieldId] = el)}
+                            value={templates[fieldId] || ""}
+                            onChange={(e) => updateTemplate(fieldId, e.target.value)}
                             onFocus={() => setActiveField(fieldId)}
                             placeholder={`Ex: {{prenom}} a bien progressé ce trimestre...`}
                             className={`min-h-[120px] rounded-2xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all p-4 leading-relaxed ${activeField === fieldId ? 'ring-4 ring-violet-100 border-violet-300 shadow-inner' : ''}`}

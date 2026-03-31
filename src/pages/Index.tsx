@@ -35,6 +35,8 @@ const Index = () => {
   const [selectedClass, setSelectedClass] = React.useState<string>(initialClass);
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(initialStudentId);
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>(initialPeriod);
+  const [situation, setSituation] = React.useState("well");
+  const [comment, setComment] = React.useState("");
   const [isSaving, setIsSaving] = React.useState(false);
 
   // Trouver le degré correspondant à la classe
@@ -70,8 +72,8 @@ const Index = () => {
         transversal_skills: [],
         autonomous_work: {},
         observations: {
-          situation: 'well',
-          progression_comment: ''
+          situation: situation,
+          progression_comment: comment
         },
         remediation: [],
         sensitive_info: {}
@@ -97,6 +99,7 @@ const Index = () => {
       const nextStudent = studentsDatabase[currentIndex + 1];
       setSelectedClass(nextStudent.className);
       setSelectedStudentId(nextStudent.id);
+      setComment(""); // Réinitialiser pour le prochain élève
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       showSuccess("Vous avez atteint le dernier élève !");
@@ -110,6 +113,7 @@ const Index = () => {
       const prevStudent = studentsDatabase[currentIndex - 1];
       setSelectedClass(prevStudent.className);
       setSelectedStudentId(prevStudent.id);
+      setComment(""); // Réinitialiser
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       showSuccess("Vous êtes déjà sur le premier élève !");
@@ -171,7 +175,14 @@ const Index = () => {
 
           <SensitiveInfo />
 
-          <StudentSituation />
+          <StudentSituation 
+            student={currentStudent}
+            period={selectedPeriod}
+            comment={comment}
+            onCommentChange={setComment}
+            situation={situation}
+            onSituationChange={setSituation}
+          />
         </main>
 
         {/* Floating Action Bar */}

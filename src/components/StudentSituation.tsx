@@ -5,41 +5,90 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle2, AlertCircle, BellRing, BookOpenText, LayoutList } from "lucide-react";
+import { CheckCircle2, AlertCircle, BellRing, BookOpenText, LayoutList, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const situations = [
   {
     id: "well",
     label: "Tout va bien",
+    case: "Cas 1",
     icon: CheckCircle2,
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     borderColor: "border-emerald-200",
-    ringColor: "text-emerald-600"
   },
   {
     id: "difficulties",
     label: "Des échecs et difficultés",
+    case: "Cas 2",
     icon: AlertCircle,
     color: "text-amber-600",
     bgColor: "bg-amber-50",
     borderColor: "border-amber-200",
-    ringColor: "text-amber-600"
   },
   {
     id: "alarm",
     label: "Sonnette d'alarme",
+    case: "Cas 3",
     icon: BellRing,
     color: "text-rose-600",
     bgColor: "bg-rose-50",
     borderColor: "border-rose-200",
-    ringColor: "text-rose-600"
   }
 ];
 
-const StudentSituation = () => {
-  const [selectedSituation, setSelectedSituation] = React.useState("well");
+interface StudentSituationProps {
+  student: any;
+  period: string;
+  comment: string;
+  onCommentChange: (val: string) => void;
+  situation: string;
+  onSituationChange: (val: string) => void;
+}
+
+const StudentSituation = ({ 
+  student, 
+  period, 
+  comment, 
+  onCommentChange,
+  situation,
+  onSituationChange
+}: StudentSituationProps) => {
+
+  const generateCommentFromTemplate = (sitId: string) => {
+    const savedTemplates = localStorage.getItem('comment_templates');
+    if (!savedTemplates || !student) return;
+
+    const templates = JSON.parse(savedTemplates);
+    const sit = situations.find(s => s.id === sitId);
+    if (!sit) return;
+
+    // Formater la période pour correspondre aux clés (ex: "Période 1")
+    const periodKey = period.charAt(0).toUpperCase() + period.slice(1);
+    const templateKey = `${periodKey}-${sit.case}`;
+    let template = templates[templateKey] || "";
+
+    if (!template) return;
+
+    // Remplacement des variables
+    const replacements: Record<string, string> = {
+      "{{prenom}}": student.firstName,
+      "{{sexe}}": student.gender === 'f' ? "Elle" : "Il",
+      // Les autres variables seront implémentées au fur et à mesure de la logique de données
+    };
+
+    Object.entries(replacements).forEach(([key, val]) => {
+      template = template.replaceAll(key, val);
+    });
+
+    onCommentChange(template);
+  };
+
+  const handleSituationChange = (val: string) => {
+    onSituationChange(val);
+    generateCommentFromTemplate(val);
+  };
 
   return (
     <div className="space-y-8">
@@ -53,17 +102,17 @@ const StudentSituation = () => {
         </CardHeader>
         <CardContent>
           <RadioGroup 
-            value={selectedSituation} 
-            onValueChange={setSelectedSituation}
+            value={situation} 
+            onValueChange={handleSituationChange}
             className="grid grid-cols-1 md:grid-cols-3 gap-4"
           >
             {situations.map((sit) => (
               <div 
                 key={sit.id}
-                onClick={() => setSelectedSituation(sit.id)}
+                onClick={() => handleSituationChange(sit.id)}
                 className={cn(
                   "relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 cursor-pointer transition-all hover:scale-[1.02]",
-                  selectedSituation === sit.id 
+                  situation === sit.id 
                     ? cn(sit.bgColor, sit.borderColor, "shadow-md") 
                     : "bg-white border-slate-100 hover:border-slate-200"
                 )}
@@ -74,12 +123,12 @@ const StudentSituation = () => {
                   htmlFor={sit.id} 
                   className={cn(
                     "font-bold text-center cursor-pointer",
-                    selectedSituation === sit.id ? sit.color : "text-slate-600"
+                    situation === sit.id ? sit.color : "text-slate-600"
                   )}
                 >
                   {sit.label}
                 </Label>
-                {selectedSituation === sit.id && (
+                {situation === sit.id && (
                   <div className={cn("absolute top-3 right-3", sit.color)}>
                     <CheckCircle2 className="w-5 h-5 fill-current text-white" />
                   </div>
@@ -92,14 +141,20 @@ const StudentSituation = () => {
 
       {/* Commentaire du carnet de progression */}
       <Card className="border-none shadow-lg bg-white/50 backdrop-blur-sm">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl font-semibold text-slate-800 flex items-center gap-2">
             <BookOpenText className="text-blue-500" />
             Commentaire du carnet de progression
           </CardTitle>
+          <div className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+            <Sparkles className="w-3 h-3" />
+            Généré automatiquement
+          </div>
         </CardHeader>
         <CardContent>
           <Textarea 
+            value={comment}
+            onChange={(e) => onCommentChange(e.target.value)}
             placeholder="Saisissez ici le commentaire qui apparaîtra dans le carnet de progression..." 
             className="min-h-[150px] bg-white border-slate-200 focus-visible:ring-blue-500 rounded-2xl resize-none p-4 text-slate-700 leading-relaxed"
           />
