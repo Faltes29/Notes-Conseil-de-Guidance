@@ -61,6 +61,8 @@ const Index = () => {
     
     setIsSaving(true);
     try {
+      // Note: In a real app, we would collect state from all child components.
+      // For this demo, we're saving the core student info.
       const { error } = await supabase.from('reports').upsert({
         student_id: currentStudent.id,
         student_name: `${currentStudent.firstName} ${currentStudent.lastName}`,
