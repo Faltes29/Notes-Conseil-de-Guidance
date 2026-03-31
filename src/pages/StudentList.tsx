@@ -15,20 +15,33 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar, Trash2, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { classes, periods } from "@/data/students";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 
 const StudentList = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedClass, setSelectedClass] = React.useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>("all");
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ['reports', selectedClass, selectedPeriod],
@@ -69,7 +82,29 @@ const StudentList = () => {
   const handleExport = () => {
     const count = selectedIds.size > 0 ? selectedIds.size : (reports?.length || 0);
     showSuccess(`Exportation de ${count} enregistrement(s) en cours...`);
-    // Logique d'exportation réelle à implémenter ici (CSV/PDF)
+  };
+
+  const handleDelete = async () => {
+    if (selectedIds.size === 0) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .in('id', Array.from(selectedIds));
+
+      if (error) throw error;
+
+      showSuccess(`${selectedIds.size} enregistrement(s) supprimé(s) avec succès.`);
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+    } catch (err) {
+      console.error(err);
+      showError("Erreur lors de la suppression.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getSituationIcon = (situation: string) => {
@@ -132,14 +167,46 @@ const StudentList = () => {
               </Select>
             </div>
 
-            <Button 
-              onClick={handleExport}
-              variant="outline" 
-              className="rounded-xl border-slate-200 bg-white hover:bg-slate-50"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {selectedIds.size > 0 ? `Exporter (${selectedIds.size})` : "Tout exporter"}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleExport}
+                variant="outline" 
+                className="rounded-xl border-slate-200 bg-white hover:bg-slate-50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {selectedIds.size > 0 ? `Exporter (${selectedIds.size})` : "Tout exporter"}
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={selectedIds.size === 0 || isDeleting}
+                    className="rounded-xl border-red-100 text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                  >
+                    {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                    Supprimer {selectedIds.size > 0 && `(${selectedIds.size})`}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-2xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Êtes-vous sûr de vouloir supprimer {selectedIds.size} enregistrement(s) ? Cette action est irréversible.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">Annuler</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDelete}
+                      className="rounded-xl bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Supprimer définitivement
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
 
