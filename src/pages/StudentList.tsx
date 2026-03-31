@@ -26,7 +26,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar, Trash2, Loader2 } from "lucide-react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Users, ArrowLeft, Download, CheckCircle2, AlertCircle, BellRing, Edit2, Calendar, Trash2, Loader2, Eye } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +41,7 @@ import { classes, periods } from "@/data/students";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { showSuccess, showError } from "@/utils/toast";
+import ReportDetailsCard from "@/components/ReportDetailsCard";
 
 const StudentList = () => {
   const navigate = useNavigate();
@@ -311,15 +319,36 @@ const StudentList = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleEdit(report)}
-                            className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-lg"
-                          >
-                            <Edit2 className="w-4 h-4 mr-2" />
-                            Modifier
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Détails
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Détails du suivi</DialogTitle>
+                                </DialogHeader>
+                                <ReportDetailsCard report={report} />
+                              </DialogContent>
+                            </Dialog>
+
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleEdit(report)}
+                              className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-lg"
+                            >
+                              <Edit2 className="w-4 h-4 mr-2" />
+                              Modifier
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
