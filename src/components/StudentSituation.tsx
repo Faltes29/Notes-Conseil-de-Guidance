@@ -58,16 +58,25 @@ const StudentSituation = ({
 
   const loadTemplate = () => {
     const savedTemplates = localStorage.getItem('comment_templates');
-    if (!savedTemplates) return;
+    if (!savedTemplates) {
+      console.log("Aucun template sauvegardé trouvé");
+      return;
+    }
 
     const templates = JSON.parse(savedTemplates);
     const sit = situations.find(s => s.id === situation);
-    if (!sit) return;
+    if (!sit) {
+      console.log("Situation non trouvée:", situation);
+      return;
+    }
 
     // Formater la période pour correspondre aux clés (ex: "Période 1")
     const periodKey = period.charAt(0).toUpperCase() + period.slice(1);
     const templateKey = `${periodKey}-${sit.case}`;
     const template = templates[templateKey] || "";
+
+    console.log("Recherche du template:", templateKey);
+    console.log("Template trouvé:", template ? "Oui" : "Non");
 
     if (template) {
       // Remplacement des variables
@@ -81,13 +90,17 @@ const StudentSituation = ({
         processedTemplate = processedTemplate.replaceAll(key, val);
       });
 
+      console.log("Template après remplacement des variables:", processedTemplate);
       onCommentChange(processedTemplate);
+    } else {
+      console.log("Template non trouvé pour la clé:", templateKey);
     }
   };
 
   // Charger le template quand la période ou la situation change
   React.useEffect(() => {
     if (period && situation) {
+      console.log("Changement détecté - période:", period, "situation:", situation);
       loadTemplate();
     }
   }, [period, situation]);
