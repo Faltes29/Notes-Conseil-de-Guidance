@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings as SettingsIcon, Save, ArrowLeft, MessageSquareQuote, Info, Sparkles } from "lucide-react";
+import { Settings as SettingsIcon, Save, ArrowLeft, MessageSquareQuote, Info, Sparkles, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -46,9 +46,12 @@ const DEFAULT_TEMPLATES: Record<string, string> = {
   "Période 3-Cas 3": "Au terme de cette troisième période, {{prenom}} est en échec en {{echecs}} et en difficulté en {{difficultes}} comme indiqué dans les parties du carnet de progression réservées à cette/ces matière(s) et dans les autoévaluations de période.\n\nCependant, {{sexe}} n’a pas pu être évalué en {{non_evalues}}.\n\nLe conseil de classe souhaite tirer une sérieuse sonnette d’alarme.\n\nCes difficultés sont également expliquées par des compétences transversales qui posent problème dans plusieurs cours : {{competences_transversales}}.\n\nPar ailleurs, le conseil de classe note {{freins}} qui empêchent {{prenom}} d’évoluer sereinement dans ses apprentissages.\n\nLe conseil de classe aimerait néanmoins mettre en évidence {{forces}}.\n\nEn travail autonome, {{prenom}} maîtrise {{travail_autonome_maitrise}} mais ne maitrise pas {{travail_autonome_non_maitrise}}.\n\n-Cadre conseils-\n{{prenom}} {{conseils}}.\n{{sexe}} ira également de manière obligatoire en remédiation {{remediations_obligatoires}} et est invité en remédiation {{remediations_conseillees}}.",
 };
 
+const PROMPT_DEFAULT = "Le texte ci-dessous a été généré automatiquement via Excel : il contient un texte de base + des ajouts (mots/expressions) parfois mal intégrés grammaticalement. Ta tâche : réécrire uniquement les passages où l’ajout ne s’intègre pas correctement, afin d’obtenir des phrases grammaticalement correctes et naturelles. Contraintes strictes : Ne change pas le ton (bulletin scolaire) ni le niveau de langue. Garde la structure générale : mêmes phrases / même ordre des idées / mêmes informations. N’ajoute aucune nouvelle information et ne supprime rien (sauf les ajouts manifestement hors-sujet si je le précise). Quand un ajout est une liste (ex. matières, compétences), intègre-le avec une structure du type : “les compétences suivantes : …” / “les matières suivantes : …” / “les points suivants : …” ou transforme en verbes à l’infinitif introduits par “à” / “de” (ex. “les compétences consistant à …”). Corrige uniquement ce qui est nécessaire : accords, prépositions, ponctuation, connecteurs (“à”, “de”, “dans”, “en matière de”, “concernant…”). Évite les reformulations stylistiques : ne cherche pas à faire “plus joli”, seulement “correctement intégré”. Sortie attendue : fournis uniquement la version corrigée complète du texte, sans commentaires.";
+
 const Settings = () => {
   const [activeField, setActiveField] = React.useState<string | null>(null);
   const [templates, setTemplates] = React.useState<Record<string, string>>(DEFAULT_TEMPLATES);
+  const [promptText, setPromptText] = React.useState(PROMPT_DEFAULT);
   const textareasRef = React.useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   // Charger les modèles au démarrage
@@ -57,11 +60,16 @@ const Settings = () => {
     if (saved) {
       setTemplates(JSON.parse(saved));
     }
+    const savedPrompt = localStorage.getItem('ai_prompt');
+    if (savedPrompt) {
+      setPromptText(savedPrompt);
+    }
   }, []);
 
   const handleSave = () => {
     localStorage.setItem('comment_templates', JSON.stringify(templates));
-    showSuccess("Les modèles de commentaires ont été enregistrés !");
+    localStorage.setItem('ai_prompt', promptText);
+    showSuccess("Les modèles de commentaires et le prompt ont été enregistrés !");
   };
 
   const updateTemplate = (id: string, value: string) => {
@@ -140,6 +148,26 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Encart Prompt IA */}
+          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
+                <MessageSquare className="w-5 h-5 text-blue-500" />
+                Prompt IA
+              </CardTitle>
+              <CardDescription>
+                Prompt à utiliser pour corriger et améliorer les commentaires générés automatiquement.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea 
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                className="min-h-[200px] rounded-2xl border-slate-200 focus-visible:ring-blue-500 bg-white resize-none p-4 leading-relaxed"
+              />
+            </CardContent>
+          </Card>
+
           <div className="space-y-12">
             {periods.map((period) => (
               <Card key={period} className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
@@ -189,7 +217,7 @@ const Settings = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-lg">
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Info className="w-4 h-4" />
-              <span>Les modèles sont sauvegardés pour vos prochaines saisies.</span>
+              <span>Les modèles et le prompt sont sauvegardés pour vos prochaines saisies.</span>
             </div>
             <Button 
               onClick={handleSave}
