@@ -10,6 +10,7 @@ import { Settings as SettingsIcon, Save, ArrowLeft, MessageSquareQuote, Info, Sp
 import { Link } from "react-router-dom";
 import { showSuccess } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { Accordion, AccordionItem } from "@/components/ui/accordion";
 
 const periods = ["Période 1", "Période 2", "Période 3"];
 const cases = ["Cas 1", "Cas 2", "Cas 3"];
@@ -148,71 +149,80 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Encart Prompt IA */}
-          <Card className="border-none shadow-md bg-white/80 backdrop-blur-sm border-l-4 border-l-blue-500">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
-                <MessageSquare className="w-5 h-5 text-blue-500" />
-                Prompt IA
-              </CardTitle>
-              <CardDescription>
-                Prompt à utiliser pour corriger et améliorer les commentaires générés automatiquement.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea 
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                className="min-h-[200px] rounded-2xl border-slate-200 focus-visible:ring-blue-500 bg-white resize-none p-4 leading-relaxed"
-              />
-            </CardContent>
-          </Card>
-
-          <div className="space-y-12">
-            {periods.map((period) => (
-              <Card key={period} className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-white/50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MessageSquareQuote className="w-5 h-5 text-violet-500" />
-                      <CardTitle>{period}</CardTitle>
-                    </div>
-                    <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-100">
-                      3 Modèles
-                    </Badge>
-                  </div>
+          {/* Accordéon Prompt IA */}
+          <Accordion as="div">
+            <AccordionItem value="prompt-ia">
+              <div className="border-b border-slate-100 bg-white/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2 text-slate-800">
+                    <MessageSquare className="w-5 h-5 text-blue-500" />
+                    Prompt IA
+                  </CardTitle>
+                  <CardDescription>
+                    Prompt à utiliser pour corriger et améliorer les commentaires générés automatiquement.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="p-6 space-y-8">
-                  <div className="grid grid-cols-1 gap-6">
-                    {cases.map((cas) => {
-                      const fieldId = `${period}-${cas}`;
-                      return (
-                        <div key={fieldId} className="space-y-3">
-                          <Label className="text-sm font-bold text-slate-700 flex items-center justify-between">
-                            <span>{period} — {cas}</span>
-                            {activeField === fieldId && (
-                              <span className="text-violet-500 text-xs animate-pulse flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                                Champ actif
-                              </span>
-                            )}
-                          </Label>
-                          <Textarea 
-                            ref={(el) => { textareasRef.current[fieldId] = el; }}
-                            value={templates[fieldId] || ""}
-                            onChange={(e) => updateTemplate(fieldId, e.target.value)}
-                            onFocus={() => setActiveField(fieldId)}
-                            placeholder={`Ex: {{prenom}} a bien progressé ce trimestre...`}
-                            className={`min-h-[120px] rounded-2xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all p-4 leading-relaxed ${activeField === fieldId ? 'ring-4 ring-violet-100 border-violet-300 shadow-inner' : ''}`}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                <CardContent>
+                  <Textarea 
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                    className="min-h-[200px] rounded-2xl border-slate-200 focus-visible:ring-blue-500 bg-white resize-none p-4 leading-relaxed"
+                  />
                 </CardContent>
-              </Card>
-            ))}
-          </div>
+              </CardContent>
+            </CardContent>
+          </Accordion>
+
+          {/* Accordéon Modèles de commentaires */}
+          <Accordion as="div">
+            <AccordionItem value="templates">
+              <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+                {periods.map((period) => (
+                  <Card key={period} className="border-none shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="border-b border-slate-100 bg-white/50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <MessageSquareQuote className="w-5 h-5 text-violet-500" />
+                          <CardTitle>{period}</CardTitle>
+                        </div>
+                        <Badge variant="secondary" className="bg-violet-50 text-violet-700 border-violet-100">
+                          3 Modèles
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-8">
+                      <div className="grid grid-cols-1 gap-6">
+                        {cases.map((cas) => {
+                          const fieldId = `${period}-${cas}`;
+                          return (
+                            <div key={fieldId} className="space-y-3">
+                              <Label className="text-sm font-bold text-slate-700 flex items-center justify-between">
+                                <span>{period} — {cas}</span>
+                                {activeField === fieldId && (
+                                  <span className="text-violet-500 text-xs animate-pulse flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                                    Champ actif
+                                  </span>
+                                )}
+                              </Label>
+                              <Textarea 
+                                ref={(el) => { textareasRef.current[fieldId] = el; }}
+                                value={templates[fieldId] || ""}
+                                onChange={(e) => updateTemplate(fieldId, e.target.value)}
+                                onFocus={() => setActiveField(fieldId)}
+                                placeholder={`Ex: {{prenom}} a bien progressé ce trimestre...`}
+                                className={`min-h-[120px] rounded-2xl border-slate-200 focus-visible:ring-violet-500 bg-white resize-none transition-all p-4 leading-relaxed ${activeField === fieldId ? 'ring-4 ring-violet-100 border-violet-300 shadow-inner' : ''}`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </CardContent>
+            </AccordionItem>
+          </Accordion>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-lg">
             <div className="flex items-center gap-2 text-slate-500 text-sm">
