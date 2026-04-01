@@ -56,39 +56,41 @@ const StudentSituation = ({
   onSituationChange
 }: StudentSituationProps) => {
 
-  const generateCommentFromTemplate = (sitId: string) => {
+  const loadTemplate = () => {
     const savedTemplates = localStorage.getItem('comment_templates');
-    if (!savedTemplates || !student) return;
+    if (!savedTemplates) return;
 
     const templates = JSON.parse(savedTemplates);
-    const sit = situations.find(s => s.id === sitId);
+    const sit = situations.find(s => s.id === situation);
     if (!sit) return;
 
     // Formater la période pour correspondre aux clés (ex: "Période 1")
     const periodKey = period.charAt(0).toUpperCase() + period.slice(1);
     const templateKey = `${periodKey}-${sit.case}`;
-    let template = templates[templateKey] || "";
+    const template = templates[templateKey] || "";
 
-    if (!template) return;
+    if (template) {
+      // Remplacement des variables
+      const replacements: Record<string, string> = {
+        "{{prenom}}": student?.firstName || "",
+        "{{sexe}}": student?.gender === 'f' ? "Elle" : "Il",
+      };
 
-    // Remplacement des variables
-    const replacements: Record<string, string> = {
-      "{{prenom}}": student.firstName,
-      "{{sexe}}": student.gender === 'f' ? "Elle" : "Il",
-      // Les autres variables seront implémentées au fur et à mesure de la logique de données
-    };
+      let processedTemplate = template;
+      Object.entries(replacements).forEach(([key, val]) => {
+        processedTemplate = processedTemplate.replaceAll(key, val);
+      });
 
-    Object.entries(replacements).forEach(([key, val]) => {
-      template = template.replaceAll(key, val);
-    });
-
-    onCommentChange(template);
+      onCommentChange(processedTemplate);
+    }
   };
 
-  const handleSituationChange = (val: string) => {
-    onSituationChange(val);
-    generateCommentFromTemplate(val);
-  };
+  // Charger le template quand la période ou la situation change
+  React.useEffect(() => {
+    if (period && situation) {
+      loadTemplate();
+    }
+  }, [period, situation]);
 
   return (
     <div className="space-y-8">
@@ -103,13 +105,13 @@ const StudentSituation = ({
         <CardContent>
           <RadioGroup 
             value={situation} 
-            onValueChange={handleSituationChange}
+            onValueChange={onSituationChange}
             className="grid grid-cols-1 md:grid-cols-3 gap-4"
           >
             {situations.map((sit) => (
               <div 
                 key={sit.id}
-                onClick={() => handleSituationChange(sit.id)}
+                onClick={() => onSituationChange(sit.id)}
                 className={cn(
                   "relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 cursor-pointer transition-all hover:scale-[1.02]",
                   situation === sit.id 
