@@ -76,7 +76,7 @@ const AutonomousWork = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-slate-600">
             <MessageSquareText className="w-4 h-4" />
-            <Label className="font-semibold">Notes complémentaires sur l'autonomie</Label>
+            <Label className="font-semibold">Notes complémentaires</Label>
           </div>
           <Textarea 
             placeholder="Observations spécifiques sur le comportement en autonomie..." 

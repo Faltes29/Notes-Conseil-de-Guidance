@@ -100,7 +100,7 @@ const CourseSelector = ({ degree }: CourseSelectorProps) => {
                   course.status === 'not-evaluable' ? "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200" : "hover:bg-slate-50"
                 )}
               >
-                <HelpCircle className="w-3 h-3 mr-1" /> Non éval.
+                <HelpCircle className="w-3 h-3 mr-1" /> NE
               </Button>
             </div>
           </div>
