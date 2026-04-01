@@ -74,8 +74,8 @@ const CourseSelector = ({ degree }: CourseSelectorProps) => {
                 size="sm"
                 onClick={() => updateStatus(course.id, 'failure')}
                 className={cn(
-                  "rounded-full text-xs transition-all",
-                  course.status === 'failure' ? "bg-red-100 text-red-700 border-red-200 hover:bg-red-200" : "hover:bg-slate-50"
+                  "rounded-full text-xs transition-all text-red-600 border-red-200 hover:bg-red-50",
+                  course.status === 'failure' && "bg-red-100 border-red-300 font-bold"
                 )}
               >
                 <XCircle className="w-3 h-3 mr-1" /> Échec
@@ -85,8 +85,8 @@ const CourseSelector = ({ degree }: CourseSelectorProps) => {
                 size="sm"
                 onClick={() => updateStatus(course.id, 'difficulty')}
                 className={cn(
-                  "rounded-full text-xs transition-all",
-                  course.status === 'difficulty' ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200" : "hover:bg-slate-50"
+                  "rounded-full text-xs transition-all text-amber-600 border-amber-200 hover:bg-amber-50",
+                  course.status === 'difficulty' && "bg-amber-100 border-amber-300 font-bold"
                 )}
               >
                 <AlertCircle className="w-3 h-3 mr-1" /> Difficulté
@@ -96,8 +96,8 @@ const CourseSelector = ({ degree }: CourseSelectorProps) => {
                 size="sm"
                 onClick={() => updateStatus(course.id, 'not-evaluable')}
                 className={cn(
-                  "rounded-full text-xs transition-all",
-                  course.status === 'not-evaluable' ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200" : "hover:bg-slate-50"
+                  "rounded-full text-xs transition-all text-blue-600 border-blue-200 hover:bg-blue-50",
+                  course.status === 'not-evaluable' && "bg-blue-100 border-blue-300 font-bold"
                 )}
               >
                 <HelpCircle className="w-3 h-3 mr-1" /> NE
