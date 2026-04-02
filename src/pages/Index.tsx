@@ -27,6 +27,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { studentsDatabase, classesByDegree } from "@/data/students";
 import { supabase } from "@/integrations/supabase/client";
 
+const PROMPT_DEFAULT = "Le texte ci-dessous a été généré automatiquement via Excel : il contient un texte de base + des ajouts (mots/expressions) parfois mal intégrés grammaticalement. Ta tâche : réécrire uniquement les passages où l’ajout ne s’intègre pas correctement, afin d’obtenir des phrases grammaticalement correctes et naturelles. Contraintes strictes : Ne change pas le ton (bulletin scolaire) ni le niveau de langue. Garde la structure générale : mêmes phrases / même ordre des idées / mêmes informations. N’ajoute aucune nouvelle information et ne supprime rien (sauf les ajouts manifestement hors-sujet si je le précise). Quand un ajout est une liste (ex. matières, compétences), intègre-le avec une structure du type : “les compétences suivantes : …” / “les matières suivantes : …” / “les points suivants : …” ou transforme en verbes à l’infinitif introduits par “à” / “de” (ex. “les compétences consistant à …”). Corrige uniquement ce qui est nécessaire : accords, prépositions, ponctuation, connecteurs (“à”, “de”, “dans”, “en matière de”, “concernant…”). Évite les reformulations stylistiques : ne cherche pas à faire “plus joli”, seulement “correctement intégré”. Sortie attendue : fournis uniquement la version corrigée complète du texte, sans commentaires.";
+
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -182,11 +184,11 @@ const Index = () => {
   };
 
   const handleCopyForAI = () => {
-    const savedPrompt = localStorage.getItem('ai_prompt') || "Corrige ce texte pour qu'il soit grammaticalement correct :";
-    const fullText = `${savedPrompt}\n\nTexte à corriger :\n${comment}`;
+    const savedPrompt = localStorage.getItem('ai_prompt') || PROMPT_DEFAULT;
+    const fullText = `${savedPrompt}\n\n${comment}`;
     
     navigator.clipboard.writeText(fullText).then(() => {
-      showSuccess("Prompt et commentaire copiés dans le presse-papier !");
+      showSuccess("Prompt et commentaire copiés !");
     }).catch(() => {
       showError("Erreur lors de la copie.");
     });
