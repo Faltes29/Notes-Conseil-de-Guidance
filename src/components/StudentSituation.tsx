@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckCircle2, AlertCircle, BellRing, BookOpenText, LayoutList, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_TEMPLATES } from "@/data/templates";
 
 const situations = [
   {
@@ -45,6 +46,7 @@ interface StudentSituationProps {
   onCommentChange: (val: string) => void;
   situation: string;
   onSituationChange: (val: string) => void;
+  formData?: any; // To be used for full variable replacement
 }
 
 const StudentSituation = ({ 
@@ -53,36 +55,38 @@ const StudentSituation = ({
   comment, 
   onCommentChange,
   situation,
-  onSituationChange
+  onSituationChange,
+  formData = {}
 }: StudentSituationProps) => {
 
   const loadTemplate = () => {
     const savedTemplates = localStorage.getItem('comment_templates');
-    if (!savedTemplates) {
-      console.log("Aucun template sauvegardé trouvé");
-      return;
-    }
-
-    const templates = JSON.parse(savedTemplates);
+    const templates = savedTemplates ? JSON.parse(savedTemplates) : DEFAULT_TEMPLATES;
+    
     const sit = situations.find(s => s.id === situation);
-    if (!sit) {
-      console.log("Situation non trouvée:", situation);
-      return;
-    }
+    if (!sit) return;
 
-    // Formater la période pour correspondre aux clés (ex: "Période 1")
+    // Normalize period key (e.g., "période 1" -> "Période 1")
     const periodKey = period.charAt(0).toUpperCase() + period.slice(1);
     const templateKey = `${periodKey}-${sit.case}`;
-    const template = templates[templateKey] || "";
-
-    console.log("Recherche du template:", templateKey);
-    console.log("Template trouvé:", template ? "Oui" : "Non");
+    const template = templates[templateKey] || DEFAULT_TEMPLATES[templateKey] || "";
 
     if (template) {
-      // Remplacement des variables
+      // Basic replacements for now
       const replacements: Record<string, string> = {
-        "{{prenom}}": student?.firstName || "",
+        "{{prenom}}": student?.firstName || "l'élève",
         "{{sexe}}": student?.gender === 'f' ? "Elle" : "Il",
+        "{{echecs}}": formData.echecs || "...",
+        "{{difficultes}}": formData.difficultes || "...",
+        "{{non_evalues}}": formData.non_evalues || "...",
+        "{{forces}}": formData.forces || "...",
+        "{{freins}}": formData.freins || "...",
+        "{{conseils}}": formData.conseils || "...",
+        "{{competences_transversales}}": formData.skills || "...",
+        "{{travail_autonome_maitrise}}": formData.autoMaitrise || "...",
+        "{{travail_autonome_non_maitrise}}": formData.autoNonMaitrise || "...",
+        "{{remediations_obligatoires}}": formData.remObligatoire || "...",
+        "{{remediations_conseillees}}": formData.remConseillee || "...",
       };
 
       let processedTemplate = template;
@@ -90,24 +94,19 @@ const StudentSituation = ({
         processedTemplate = processedTemplate.replaceAll(key, val);
       });
 
-      console.log("Template après remplacement des variables:", processedTemplate);
       onCommentChange(processedTemplate);
-    } else {
-      console.log("Template non trouvé pour la clé:", templateKey);
     }
   };
 
-  // Charger le template quand la période ou la situation change
+  // Trigger template load when period or situation changes
   React.useEffect(() => {
     if (period && situation) {
-      console.log("Changement détecté - période:", period, "situation:", situation);
       loadTemplate();
     }
-  }, [period, situation]);
+  }, [period, situation, student?.id]); // Also reload if student changes
 
   return (
     <div className="space-y-8">
-      {/* Situation de l'élève */}
       <Card className="border-none shadow-lg bg-white/50 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-slate-800 flex items-center gap-2">
@@ -154,7 +153,6 @@ const StudentSituation = ({
         </CardContent>
       </Card>
 
-      {/* Commentaire du carnet de progression */}
       <Card className="border-none shadow-lg bg-white/50 backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl font-semibold text-slate-800 flex items-center gap-2">
