@@ -2,7 +2,7 @@
 
 import React from 'react';
 import StudentHeader from "@/components/StudentHeader";
-import CourseSelector from "@/components/CourseSelector";
+import CourseSelector, { Status } from "@/components/CourseSelector";
 import SkillsSelector from "@/components/SkillsSelector";
 import AutonomousWork from "@/components/AutonomousWork";
 import ObservationFields from "@/components/ObservationFields";
@@ -35,11 +35,20 @@ const Index = () => {
   const [selectedClass, setSelectedClass] = React.useState<string>(initialClass);
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>(initialStudentId);
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>(initialPeriod);
+  
+  // Form State
+  const [courseResults, setCourseResults] = React.useState<Record<string, Status>>({});
+  const [transversalSkills, setTransversalSkills] = React.useState<string[]>([]);
+  const [autonomousWork, setAutonomousWork] = React.useState<Record<string, boolean | null>>({});
+  const [autonomousNotes, setAutonomousNotes] = React.useState("");
+  const [observations, setObservations] = React.useState({ forces: "", freins: "", conseils: "" });
+  const [remediations, setRemediations] = React.useState<any[]>([{ id: '1', subject: '', status: 'conseillee' }]);
+  const [sensitiveInfo, setSensitiveInfo] = React.useState({ notes: "", follow_up: [{ person: "", reason: "" }, { person: "", reason: "" }] });
+  
   const [situation, setSituation] = React.useState("well");
   const [comment, setComment] = React.useState("");
   const [isSaving, setIsSaving] = React.useState(false);
 
-  // Trouver le degré correspondant à la classe
   const selectedDegree = React.useMemo(() => {
     for (const [degree, classes] of Object.entries(classesByDegree)) {
       if (classes.includes(selectedClass)) return degree;
@@ -50,12 +59,63 @@ const Index = () => {
   const currentStudent = studentsDatabase.find(s => s.id === selectedStudentId);
   const currentIndex = studentsDatabase.findIndex(s => s.id === selectedStudentId);
 
+  // Helper to format lists for the comment
+  const formatList = (list: string[]) => {
+    if (list.length === 0) return "";
+    if (list.length === 1) return list[0];
+    const last = list.pop();
+    return `${list.join(", ")} et ${last}`;
+  };
+
+  // Prepare data for StudentSituation
+  const formDataForComment = React.useMemo(() => {
+    const echecs = Object.entries(courseResults).filter(([_, s]) => s === 'failure').map(([n]) => n);
+    const diffs = Object.entries(courseResults).filter(([_, s]) => s === 'difficulty').map(([n]) => n);
+    const nes = Object.entries(courseResults).filter(([_, s]) => s === 'not-evaluable').map(([n]) => n);
+    
+    const autoMaitrise = Object.entries(autonomousWork).filter(([_, v]) => v === true).map(([n]) => n);
+    const autoNonMaitrise = Object.entries(autonomousWork).filter(([_, v]) => v === false).map(([n]) => n);
+    
+    const remObli = remediations.filter(r => r.status === 'obligatoire' && r.subject).map(r => r.subject);
+    const remCons = remediations.filter(r => r.status === 'conseillee' && r.subject).map(r => r.subject);
+
+    return {
+      echecs: formatList(echecs),
+      difficultes: formatList(diffs),
+      non_evalues: formatList(nes),
+      skills: formatList(transversalSkills),
+      forces: observations.forces,
+      freins: observations.freins,
+      conseils: observations.conseils,
+      autoMaitrise: formatList(autoMaitrise),
+      autoNonMaitrise: formatList(autoNonMaitrise),
+      remObligatoire: formatList(remObli),
+      remConseillee: formatList(remCons),
+      personne_ressource_1: sensitiveInfo.follow_up[0]?.person,
+      motif_rdv_1: sensitiveInfo.follow_up[0]?.reason,
+      personne_ressource_2: sensitiveInfo.follow_up[1]?.person,
+      motif_rdv_2: sensitiveInfo.follow_up[1]?.reason,
+    };
+  }, [courseResults, transversalSkills, autonomousWork, observations, remediations, sensitiveInfo]);
+
   const handleClassChange = (className: string) => {
     setSelectedClass(className);
     const firstInClass = studentsDatabase.find(s => s.className === className);
     if (firstInClass) {
       setSelectedStudentId(firstInClass.id);
     }
+  };
+
+  const resetForm = () => {
+    setCourseResults({});
+    setTransversalSkills([]);
+    setAutonomousWork({});
+    setAutonomousNotes("");
+    setObservations({ forces: "", freins: "", conseils: "" });
+    setRemediations([{ id: Date.now().toString(), subject: '', status: 'conseillee' }]);
+    setSensitiveInfo({ notes: "", follow_up: [{ person: "", reason: "" }, { person: "", reason: "" }] });
+    setComment("");
+    setSituation("well");
   };
 
   const handleSave = async (silent = false) => {
@@ -68,15 +128,16 @@ const Index = () => {
         student_name: `${currentStudent.firstName} ${currentStudent.lastName}`,
         period: selectedPeriod,
         class_name: selectedClass,
-        course_results: {}, 
-        transversal_skills: [],
-        autonomous_work: {},
+        course_results: courseResults,
+        transversal_skills: transversalSkills,
+        autonomous_work: { ...autonomousWork, notes: autonomousNotes },
         observations: {
+          ...observations,
           situation: situation,
           progression_comment: comment
         },
-        remediation: [],
-        sensitive_info: {}
+        remediation: remediations,
+        sensitive_info: sensitiveInfo
       }, { onConflict: 'student_id,period' });
 
       if (error) throw error;
@@ -94,12 +155,11 @@ const Index = () => {
 
   const handleNextStudent = async () => {
     await handleSave(true);
-
     if (currentIndex < studentsDatabase.length - 1) {
       const nextStudent = studentsDatabase[currentIndex + 1];
       setSelectedClass(nextStudent.className);
       setSelectedStudentId(nextStudent.id);
-      setComment(""); // Réinitialiser pour le prochain élève
+      resetForm();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       showSuccess("Vous avez atteint le dernier élève !");
@@ -108,12 +168,11 @@ const Index = () => {
 
   const handlePreviousStudent = async () => {
     await handleSave(true);
-
     if (currentIndex > 0) {
       const prevStudent = studentsDatabase[currentIndex - 1];
       setSelectedClass(prevStudent.className);
       setSelectedStudentId(prevStudent.id);
-      setComment(""); // Réinitialiser
+      resetForm();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       showSuccess("Vous êtes déjà sur le premier élève !");
@@ -146,9 +205,6 @@ const Index = () => {
           <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
             Prise de notes - Conseil de guidance
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Complétez les informations ci-dessous pour générer le suivi de l'élève.
-          </p>
         </header>
 
         {/* Main Content */}
@@ -162,18 +218,40 @@ const Index = () => {
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <CourseSelector degree={selectedDegree} />
+            <CourseSelector 
+              degree={selectedDegree} 
+              values={courseResults}
+              onChange={setCourseResults}
+            />
             <div className="space-y-8">
-              <SkillsSelector degree={selectedDegree} />
-              <AutonomousWork />
+              <SkillsSelector 
+                degree={selectedDegree} 
+                values={transversalSkills}
+                onChange={setTransversalSkills}
+              />
+              <AutonomousWork 
+                values={autonomousWork}
+                notes={autonomousNotes}
+                onChange={(v, n) => { setAutonomousWork(v); setAutonomousNotes(n); }}
+              />
             </div>
           </div>
 
-          <ObservationFields />
+          <ObservationFields 
+            values={observations}
+            onChange={setObservations}
+          />
           
-          <RemediationSection degree={selectedDegree} />
+          <RemediationSection 
+            degree={selectedDegree} 
+            values={remediations}
+            onChange={setRemediations}
+          />
 
-          <SensitiveInfo />
+          <SensitiveInfo 
+            values={sensitiveInfo}
+            onChange={setSensitiveInfo}
+          />
 
           <StudentSituation 
             student={currentStudent}
@@ -182,6 +260,7 @@ const Index = () => {
             onCommentChange={setComment}
             situation={situation}
             onSituationChange={setSituation}
+            formData={formDataForComment}
           />
         </main>
 

@@ -16,16 +16,16 @@ const autonomousSkills = [
   "Capacité à demander de l'aide"
 ];
 
-const AutonomousWork = () => {
-  const [evaluations, setEvaluations] = React.useState<Record<string, boolean | null>>(
-    Object.fromEntries(autonomousSkills.map(skill => [skill, null]))
-  );
+interface AutonomousWorkProps {
+  values: Record<string, boolean | null>;
+  notes: string;
+  onChange: (values: Record<string, boolean | null>, notes: string) => void;
+}
 
+const AutonomousWork = ({ values, notes, onChange }: AutonomousWorkProps) => {
   const toggleSkill = (skill: string, value: boolean) => {
-    setEvaluations(prev => ({
-      ...prev,
-      [skill]: prev[skill] === value ? null : value
-    }));
+    const newValue = values[skill] === value ? null : value;
+    onChange({ ...values, [skill]: newValue }, notes);
   };
 
   return (
@@ -48,7 +48,7 @@ const AutonomousWork = () => {
                   onClick={() => toggleSkill(skill, true)}
                   className={cn(
                     "rounded-full px-3 h-8 text-xs transition-all",
-                    evaluations[skill] === true 
+                    values[skill] === true 
                       ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200" 
                       : "hover:bg-slate-50"
                   )}
@@ -61,7 +61,7 @@ const AutonomousWork = () => {
                   onClick={() => toggleSkill(skill, false)}
                   className={cn(
                     "rounded-full px-3 h-8 text-xs transition-all",
-                    evaluations[skill] === false 
+                    values[skill] === false 
                       ? "bg-red-100 text-red-700 border-red-200 hover:bg-red-200" 
                       : "hover:bg-slate-50"
                   )}
@@ -79,6 +79,8 @@ const AutonomousWork = () => {
             <Label className="font-semibold">Notes complémentaires</Label>
           </div>
           <Textarea 
+            value={notes}
+            onChange={(e) => onChange(values, e.target.value)}
             placeholder="Observations spécifiques sur le comportement en autonomie..." 
             className="min-h-[100px] bg-white border-slate-200 focus-visible:ring-blue-500 rounded-xl resize-none"
           />

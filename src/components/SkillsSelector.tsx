@@ -9,10 +9,20 @@ import { degreeData } from "@/data/students";
 
 interface SkillsSelectorProps {
   degree: string;
+  values: string[];
+  onChange: (values: string[]) => void;
 }
 
-const SkillsSelector = ({ degree }: SkillsSelectorProps) => {
+const SkillsSelector = ({ degree, values, onChange }: SkillsSelectorProps) => {
   const skills = degreeData[degree as keyof typeof degreeData]?.skills || [];
+
+  const toggleSkill = (skill: string) => {
+    if (values.includes(skill)) {
+      onChange(values.filter(s => s !== skill));
+    } else {
+      onChange([...values, skill]);
+    }
+  };
 
   return (
     <Card className="border-none shadow-lg bg-white/50 backdrop-blur-sm">
@@ -25,7 +35,12 @@ const SkillsSelector = ({ degree }: SkillsSelectorProps) => {
       <CardContent className="grid sm:grid-cols-2 gap-4">
         {skills.map((skill) => (
           <div key={skill} className="flex items-center space-x-3 p-3 rounded-xl bg-white border border-slate-100 transition-all hover:bg-emerald-50/30">
-            <Checkbox id={skill} className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" />
+            <Checkbox 
+              id={skill} 
+              checked={values.includes(skill)}
+              onCheckedChange={() => toggleSkill(skill)}
+              className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500" 
+            />
             <Label 
               htmlFor={skill} 
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-700"

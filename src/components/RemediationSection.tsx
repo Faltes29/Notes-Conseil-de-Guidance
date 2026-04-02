@@ -10,25 +10,34 @@ import { LifeBuoy, AlertCircle, Info, Plus, Trash2 } from "lucide-react";
 import { degreeData } from "@/data/students";
 
 interface RemediationRow {
-  id: number;
+  id: string;
+  subject: string;
+  status: 'obligatoire' | 'conseillee';
 }
 
 interface RemediationSectionProps {
   degree: string;
+  values: RemediationRow[];
+  onChange: (values: RemediationRow[]) => void;
 }
 
-const RemediationSection = ({ degree }: RemediationSectionProps) => {
+const RemediationSection = ({ degree, values, onChange }: RemediationSectionProps) => {
   const subjects = degreeData[degree as keyof typeof degreeData]?.subjects || [];
-  const [rows, setRows] = React.useState<RemediationRow[]>([{ id: Date.now() }]);
 
   const addRow = () => {
-    setRows([...rows, { id: Date.now() }]);
+    onChange([...values, { id: Date.now().toString(), subject: '', status: 'conseillee' }]);
   };
 
-  const removeRow = (id: number) => {
-    if (rows.length > 1) {
-      setRows(rows.filter(row => row.id !== id));
+  const removeRow = (id: string) => {
+    if (values.length > 1) {
+      onChange(values.filter(row => row.id !== id));
+    } else {
+      onChange([{ id: Date.now().toString(), subject: '', status: 'conseillee' }]);
     }
+  };
+
+  const updateRow = (id: string, field: keyof RemediationRow, value: string) => {
+    onChange(values.map(row => row.id === id ? { ...row, [field]: value } : row));
   };
 
   return (
@@ -49,17 +58,17 @@ const RemediationSection = ({ degree }: RemediationSectionProps) => {
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        {rows.map((row, index) => (
+        {values.map((row, index) => (
           <div key={row.id} className="relative grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-white border border-slate-100 items-center group">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Matière {index + 1}</Label>
-              <Select>
+              <Select value={row.subject} onValueChange={(val) => updateRow(row.id, 'subject', val)}>
                 <SelectTrigger className="rounded-xl border-slate-200 bg-slate-50/50">
                   <SelectValue placeholder="Sélectionner une matière" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   {subjects.map((course) => (
-                    <SelectItem key={course} value={course.toLowerCase()}>{course}</SelectItem>
+                    <SelectItem key={course} value={course}>{course}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -68,7 +77,11 @@ const RemediationSection = ({ degree }: RemediationSectionProps) => {
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statut de la remédiation</Label>
               <div className="flex gap-4 items-center">
-                <RadioGroup defaultValue="conseillee" className="flex gap-4 pt-1 flex-1">
+                <RadioGroup 
+                  value={row.status} 
+                  onValueChange={(val: 'obligatoire' | 'conseillee') => updateRow(row.id, 'status', val)}
+                  className="flex gap-4 pt-1 flex-1"
+                >
                   <div className="flex items-center space-x-2 bg-orange-50/50 px-3 py-2 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-50 transition-colors flex-1">
                     <RadioGroupItem value="obligatoire" id={`row-${row.id}-obli`} className="text-orange-600 border-orange-300" />
                     <Label htmlFor={`row-${row.id}-obli`} className="cursor-pointer text-orange-800 text-sm font-medium flex items-center gap-1">
@@ -83,16 +96,14 @@ const RemediationSection = ({ degree }: RemediationSectionProps) => {
                   </div>
                 </RadioGroup>
                 
-                {rows.length > 1 && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => removeRow(row.id)}
-                    className="text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removeRow(row.id)}
+                  className="text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
