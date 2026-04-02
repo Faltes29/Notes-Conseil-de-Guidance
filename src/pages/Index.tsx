@@ -283,7 +283,7 @@ const Index = () => {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-8 rounded-3xl text-xl font-bold shadow-xl shadow-blue-100 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3"
             >
               <SparklesIcon className="w-6 h-6" />
-              Copier pour l'IA (Prompt + Commentaire)
+              Copier le prompt IA
               <CopyIcon className="w-6 h-6 ml-2 opacity-50" />
             </Button>
             <p className="text-center text-slate-400 text-sm mt-4">
