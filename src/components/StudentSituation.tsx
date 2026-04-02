@@ -5,7 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle2, AlertCircle, BellRing, BookOpenText, LayoutList, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { 
+  CheckCircle2, 
+  AlertCircle, 
+  BellRing, 
+  BookOpenText, 
+  LayoutList, 
+  Sparkles,
+  RefreshCw
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_TEMPLATES } from "@/data/templates";
 
@@ -46,7 +55,7 @@ interface StudentSituationProps {
   onCommentChange: (val: string) => void;
   situation: string;
   onSituationChange: (val: string) => void;
-  formData?: any; // To be used for full variable replacement
+  formData?: any;
 }
 
 const StudentSituation = ({ 
@@ -66,13 +75,11 @@ const StudentSituation = ({
     const sit = situations.find(s => s.id === situation);
     if (!sit) return;
 
-    // Normalize period key (e.g., "période 1" -> "Période 1")
     const periodKey = period.charAt(0).toUpperCase() + period.slice(1);
     const templateKey = `${periodKey}-${sit.case}`;
     const template = templates[templateKey] || DEFAULT_TEMPLATES[templateKey] || "";
 
     if (template) {
-      // Basic replacements for now
       const replacements: Record<string, string> = {
         "{{prenom}}": student?.firstName || "l'élève",
         "{{sexe}}": student?.gender === 'f' ? "Elle" : "Il",
@@ -98,12 +105,11 @@ const StudentSituation = ({
     }
   };
 
-  // Trigger template load when period or situation changes
   React.useEffect(() => {
     if (period && situation) {
       loadTemplate();
     }
-  }, [period, situation, student?.id]); // Also reload if student changes
+  }, [period, situation, student?.id]);
 
   return (
     <div className="space-y-8">
@@ -159,9 +165,20 @@ const StudentSituation = ({
             <BookOpenText className="text-blue-500" />
             Commentaire du carnet de progression
           </CardTitle>
-          <div className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-            <Sparkles className="w-3 h-3" />
-            Généré automatiquement
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={loadTemplate}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl h-9 px-3 transition-all active:scale-95"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Rafraîchir
+            </Button>
+            <div className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1.5 rounded-lg">
+              <Sparkles className="w-3 h-3" />
+              Généré
+            </div>
           </div>
         </CardHeader>
         <CardContent>
