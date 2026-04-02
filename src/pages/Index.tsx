@@ -17,7 +17,9 @@ import {
   ChevronLeft as PrevIcon,
   Loader2 as LoaderIcon, 
   GraduationCap as GradIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Copy as CopyIcon,
+  Sparkles as SparklesIcon
 } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -179,6 +181,17 @@ const Index = () => {
     }
   };
 
+  const handleCopyForAI = () => {
+    const savedPrompt = localStorage.getItem('ai_prompt') || "Corrige ce texte pour qu'il soit grammaticalement correct :";
+    const fullText = `${savedPrompt}\n\nTexte à corriger :\n${comment}`;
+    
+    navigator.clipboard.writeText(fullText).then(() => {
+      showSuccess("Prompt et commentaire copiés dans le presse-papier !");
+    }).catch(() => {
+      showError("Erreur lors de la copie.");
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-32">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -262,6 +275,21 @@ const Index = () => {
             onSituationChange={setSituation}
             formData={formDataForComment}
           />
+
+          {/* Copy for AI Button */}
+          <div className="pt-4">
+            <Button 
+              onClick={handleCopyForAI}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-8 rounded-3xl text-xl font-bold shadow-xl shadow-blue-100 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3"
+            >
+              <SparklesIcon className="w-6 h-6" />
+              Copier pour l'IA (Prompt + Commentaire)
+              <CopyIcon className="w-6 h-6 ml-2 opacity-50" />
+            </Button>
+            <p className="text-center text-slate-400 text-sm mt-4">
+              Ce bouton combine votre prompt de réglages avec le texte ci-dessus pour un collage rapide dans ChatGPT.
+            </p>
+          </div>
         </main>
 
         {/* Floating Action Bar */}
